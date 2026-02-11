@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom/client';
 import { ConfigProvider, theme } from 'antd';
 import ruRU from 'antd/locale/ru_RU';
 import dayjs from 'dayjs';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import 'dayjs/locale/ru';
 import 'antd/dist/reset.css';
 
@@ -36,9 +36,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     }}
   >
     <AuthProvider>
-      <BrowserRouter>
+      <HashRouter>
         <App />
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   </ConfigProvider>,
 );
