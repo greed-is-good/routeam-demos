@@ -17,10 +17,25 @@ export interface UserSession {
   expiresAt: string;
 }
 
+export type ParserFrequency = 'once' | 'daily' | 'weekly' | 'monthly';
+
+export type ParserEndType = 'never' | 'after_count' | 'on_date';
+
+export interface ParserSchedule {
+  startAt: string;
+  timezone: string;
+  frequency: ParserFrequency;
+  interval: number;
+  timeOfDay: string;
+  endType: ParserEndType;
+  endAfterOccurrences?: number;
+  endDate?: string;
+}
+
 export interface AppSettings {
   vkSources: string[];
   reportEmails: string[];
-  parserIntervalMinutes: number;
+  parserSchedule: ParserSchedule;
 }
 
 export type LicenseStatus =

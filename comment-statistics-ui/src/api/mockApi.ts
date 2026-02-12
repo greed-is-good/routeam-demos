@@ -6,6 +6,9 @@ import type {
   LicenseInfo,
   LicenseStatus,
   LoginRequest,
+  ParserEndType,
+  ParserFrequency,
+  ParserSchedule,
   ReportCommentRow,
   StatisticsRequest,
   StatisticsResponse,
@@ -16,10 +19,27 @@ const STORAGE_KEYS = {
   license: 'city-feedback.license',
 } as const;
 
+const DEFAULT_FIRST_START_OFFSET_MINUTES = 5;
+const DEFAULT_START_AT = new Date(Date.now() + 1000 * 60 * DEFAULT_FIRST_START_OFFSET_MINUTES);
+const DEFAULT_TIME_OF_DAY = `${String(DEFAULT_START_AT.getHours()).padStart(2, '0')}:${String(
+  DEFAULT_START_AT.getMinutes(),
+).padStart(2, '0')}`;
+
 const DEFAULT_SETTINGS: AppSettings = {
   vkSources: ['https://vk.com/city_official'],
   reportEmails: ['moderator@cityfeedback.local'],
-  parserIntervalMinutes: 30,
+  parserSchedule: {
+    startAt: DEFAULT_START_AT.toISOString(),
+    timezone: 'Europe/Moscow',
+    frequency: 'daily',
+    interval: 1,
+    timeOfDay: DEFAULT_TIME_OF_DAY,
+    endType: 'never',
+  },
+};
+
+type LegacyAppSettings = Partial<AppSettings> & {
+  parserIntervalMinutes?: number;
 };
 
 interface StoredLicense extends LicenseInfo {
@@ -154,6 +174,10 @@ const FALLBACK_COMMENT_TEMPLATES = [
   'Прошу обратить внимание на ситуацию на {place}, ждем решение.',
 ] as const;
 
+const ALLOWED_FREQUENCIES: ParserFrequency[] = ['once', 'daily', 'weekly', 'monthly'];
+const ALLOWED_END_TYPES: ParserEndType[] = ['never', 'after_count', 'on_date'];
+const TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 function withLatency<T>(factory: () => T): Promise<T> {
   const latency = BASE_LATENCY + Math.round(Math.random() * 250);
 
@@ -191,6 +215,181 @@ function writeStorage<T>(key: string, value: T): void {
   }
 
   window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function normalizeFrequency(value: unknown, fallback: ParserFrequency): ParserFrequency {
+  if (typeof value === 'string' && ALLOWED_FREQUENCIES.includes(value as ParserFrequency)) {
+    return value as ParserFrequency;
+  }
+
+  return fallback;
+}
+
+function normalizeEndType(value: unknown): ParserEndType {
+  if (typeof value === 'string' && ALLOWED_END_TYPES.includes(value as ParserEndType)) {
+    return value as ParserEndType;
+  }
+
+  return 'never';
+}
+
+function parseIsoDateTime(value: unknown, fallback: string): string {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return fallback;
+  }
+
+  return parsed.toISOString();
+}
+
+function parseIsoDate(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+
+  return parsed.toISOString();
+}
+
+function parsePositiveInt(value: unknown, fallback: number): number {
+  const normalized = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(normalized)) {
+    return fallback;
+  }
+
+  const rounded = Math.round(normalized);
+  return rounded > 0 ? rounded : fallback;
+}
+
+function parseTimeOfDay(value: unknown, fallback: string): string {
+  if (typeof value === 'string' && TIME_OF_DAY_PATTERN.test(value)) {
+    return value;
+  }
+
+  return fallback;
+}
+
+function extractTimeOfDayFromIsoDateTime(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return DEFAULT_TIME_OF_DAY;
+  }
+
+  return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(
+    2,
+    '0',
+  )}`;
+}
+
+function inferFrequencyFromLegacyInterval(intervalMinutes: unknown): ParserFrequency {
+  if (typeof intervalMinutes !== 'number' || !Number.isFinite(intervalMinutes)) {
+    return 'daily';
+  }
+
+  const minutes = Math.max(1, Math.round(intervalMinutes));
+  if (minutes >= 60 * 24 * 28) {
+    return 'monthly';
+  }
+  if (minutes >= 60 * 24 * 7) {
+    return 'weekly';
+  }
+
+  return 'daily';
+}
+
+function sanitizeParserSchedule(scheduleInput: unknown, legacyInterval?: unknown): ParserSchedule {
+  const schedule = isRecord(scheduleInput) ? scheduleInput : {};
+  const fallbackFrequency = inferFrequencyFromLegacyInterval(legacyInterval);
+  const frequency = normalizeFrequency(schedule.frequency, fallbackFrequency);
+  const timezone = DEFAULT_SETTINGS.parserSchedule.timezone;
+  const startAt = parseIsoDateTime(schedule.startAt, DEFAULT_SETTINGS.parserSchedule.startAt);
+  const interval = parsePositiveInt(schedule.interval, 1);
+  const timeOfDay = parseTimeOfDay(
+    schedule.timeOfDay,
+    extractTimeOfDayFromIsoDateTime(startAt),
+  );
+
+  if (frequency === 'once') {
+    return {
+      startAt,
+      timezone,
+      frequency,
+      interval: 1,
+      timeOfDay,
+      endType: 'never',
+    };
+  }
+
+  const endType = normalizeEndType(schedule.endType);
+  if (endType === 'after_count') {
+    const endAfterValue =
+      typeof schedule.endAfterOccurrences === 'number'
+        ? schedule.endAfterOccurrences
+        : Number(schedule.endAfterOccurrences);
+    const endAfterOccurrences =
+      Number.isFinite(endAfterValue) && endAfterValue > 0 ? Math.round(endAfterValue) : 1;
+
+    return {
+      startAt,
+      timezone,
+      frequency,
+      interval,
+      timeOfDay,
+      endType,
+      endAfterOccurrences,
+    };
+  }
+
+  if (endType === 'on_date') {
+    return {
+      startAt,
+      timezone,
+      frequency,
+      interval,
+      timeOfDay,
+      endType,
+      endDate: parseIsoDate(schedule.endDate) ?? startAt,
+    };
+  }
+
+  return {
+    startAt,
+    timezone,
+    frequency,
+    interval,
+    timeOfDay,
+    endType: 'never',
+  };
+}
+
+function sanitizeSettings(nextSettings: LegacyAppSettings): AppSettings {
+  const vkSources = Array.isArray(nextSettings.vkSources)
+    ? nextSettings.vkSources.map((source) => source.trim()).filter(Boolean)
+    : [...DEFAULT_SETTINGS.vkSources];
+  const reportEmails = Array.isArray(nextSettings.reportEmails)
+    ? nextSettings.reportEmails.map((email) => email.trim()).filter(Boolean)
+    : [...DEFAULT_SETTINGS.reportEmails];
+
+  return {
+    vkSources,
+    reportEmails,
+    parserSchedule: sanitizeParserSchedule(
+      nextSettings.parserSchedule,
+      nextSettings.parserIntervalMinutes,
+    ),
+  };
 }
 
 function emitLicenseUpdated(payload: LicenseInfo): void {
@@ -244,7 +443,9 @@ function calculateUsageFromKey(key: string, monthlyLimit: number): number {
 }
 
 function ensureVkSourcesConfigured(): void {
-  const settings = readStorage<AppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS);
+  const settings = sanitizeSettings(
+    readStorage<LegacyAppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS as LegacyAppSettings),
+  );
   const hasSources = settings.vkSources.some((source) => source.trim().length > 0);
 
   if (!hasSources) {
@@ -352,15 +553,19 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function fetchSettings(): Promise<AppSettings> {
-  return withLatency(() => readStorage<AppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS));
+  return withLatency(() => {
+    const stored = readStorage<LegacyAppSettings>(
+      STORAGE_KEYS.settings,
+      DEFAULT_SETTINGS as LegacyAppSettings,
+    );
+    const normalized = sanitizeSettings(stored);
+    writeStorage(STORAGE_KEYS.settings, normalized);
+    return normalized;
+  });
 }
 
 export async function updateSettings(nextSettings: AppSettings): Promise<AppSettings> {
-  const sanitized: AppSettings = {
-    vkSources: nextSettings.vkSources.map((source) => source.trim()).filter(Boolean),
-    reportEmails: nextSettings.reportEmails.map((email) => email.trim()).filter(Boolean),
-    parserIntervalMinutes: Math.max(1, Math.round(nextSettings.parserIntervalMinutes)),
-  };
+  const sanitized = sanitizeSettings(nextSettings);
 
   writeStorage(STORAGE_KEYS.settings, sanitized);
   return withLatency(() => sanitized);
@@ -486,7 +691,9 @@ export async function sendReportByEmail(period: StatisticsRequest): Promise<{ re
     });
   }
 
-  const settings = readStorage<AppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS);
+  const settings = sanitizeSettings(
+    readStorage<LegacyAppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS as LegacyAppSettings),
+  );
 
   if (!settings.reportEmails.length) {
     return withLatency(() => {
