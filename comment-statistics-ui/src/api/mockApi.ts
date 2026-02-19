@@ -6,11 +6,12 @@ import type {
   LicenseInfo,
   LicenseStatus,
   LoginRequest,
-  ParserScheduleMode,
+  ParserEndType,
+  ParserFrequency,
+  ParserSchedule,
   ReportCommentRow,
   StatisticsRequest,
   StatisticsResponse,
-  WeekdayCode,
 } from '../types/models';
 
 const STORAGE_KEYS = {
@@ -18,18 +19,28 @@ const STORAGE_KEYS = {
   license: 'city-feedback.license',
 } as const;
 
+const DEFAULT_FIRST_START_OFFSET_MINUTES = 5;
+const DEFAULT_START_AT = new Date(Date.now() + 1000 * 60 * DEFAULT_FIRST_START_OFFSET_MINUTES);
+const DEFAULT_TIME_OF_DAY = `${String(DEFAULT_START_AT.getHours()).padStart(2, '0')}:${String(
+  DEFAULT_START_AT.getMinutes(),
+).padStart(2, '0')}`;
+
 const DEFAULT_SETTINGS: AppSettings = {
   vkSources: ['https://vk.com/city_official'],
   reportEmails: ['moderator@cityfeedback.local'],
-  parserScheduleMode: 'minutes',
-  parserIntervalMinutes: 30,
-  parserDailyTime: '09:00',
-  parserWeeklyDays: ['mon', 'wed', 'fri'],
-  parserWeeklyTime: '09:00',
+  parserSchedule: {
+    startAt: DEFAULT_START_AT.toISOString(),
+    timezone: 'Europe/Moscow',
+    frequency: 'daily',
+    interval: 1,
+    timeOfDay: DEFAULT_TIME_OF_DAY,
+    endType: 'never',
+  },
 };
 
-const VALID_SCHEDULE_MODES: ParserScheduleMode[] = ['minutes', 'daily', 'weekly'];
-const VALID_WEEKDAY_CODES: WeekdayCode[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+type LegacyAppSettings = Partial<AppSettings> & {
+  parserIntervalMinutes?: number;
+};
 
 interface StoredLicense extends LicenseInfo {
   rawKey: string | null;
@@ -163,6 +174,10 @@ const FALLBACK_COMMENT_TEMPLATES = [
   'Прошу обратить внимание на ситуацию на {place}, ждем решение.',
 ] as const;
 
+const ALLOWED_FREQUENCIES: ParserFrequency[] = ['once', 'daily', 'weekly', 'monthly'];
+const ALLOWED_END_TYPES: ParserEndType[] = ['never', 'after_count', 'on_date'];
+const TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 function withLatency<T>(factory: () => T): Promise<T> {
   const latency = BASE_LATENCY + Math.round(Math.random() * 250);
 
@@ -202,64 +217,178 @@ function writeStorage<T>(key: string, value: T): void {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-function normalizeTime(value: string | undefined, fallback: string): string {
-  if (!value) {
-    return fallback;
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return fallback;
-  }
-
-  const match = /^(\d{1,2}):(\d{2})$/.exec(trimmed);
-  if (!match) {
-    return fallback;
-  }
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-    return fallback;
-  }
-
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
-function normalizeScheduleMode(mode: unknown): ParserScheduleMode {
-  if (typeof mode !== 'string') {
-    return DEFAULT_SETTINGS.parserScheduleMode;
+function normalizeFrequency(value: unknown, fallback: ParserFrequency): ParserFrequency {
+  if (typeof value === 'string' && ALLOWED_FREQUENCIES.includes(value as ParserFrequency)) {
+    return value as ParserFrequency;
   }
 
-  return VALID_SCHEDULE_MODES.includes(mode as ParserScheduleMode)
-    ? (mode as ParserScheduleMode)
-    : DEFAULT_SETTINGS.parserScheduleMode;
+  return fallback;
 }
 
-function normalizeWeekdayCodes(days: unknown): WeekdayCode[] {
-  if (!Array.isArray(days)) {
-    return DEFAULT_SETTINGS.parserWeeklyDays;
+function normalizeEndType(value: unknown): ParserEndType {
+  if (typeof value === 'string' && ALLOWED_END_TYPES.includes(value as ParserEndType)) {
+    return value as ParserEndType;
   }
 
-  const filtered = days.filter((day): day is WeekdayCode =>
-    VALID_WEEKDAY_CODES.includes(day as WeekdayCode),
+  return 'never';
+}
+
+function parseIsoDateTime(value: unknown, fallback: string): string {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return fallback;
+  }
+
+  return parsed.toISOString();
+}
+
+function parseIsoDate(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+
+  return parsed.toISOString();
+}
+
+function parsePositiveInt(value: unknown, fallback: number): number {
+  const normalized = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(normalized)) {
+    return fallback;
+  }
+
+  const rounded = Math.round(normalized);
+  return rounded > 0 ? rounded : fallback;
+}
+
+function parseTimeOfDay(value: unknown, fallback: string): string {
+  if (typeof value === 'string' && TIME_OF_DAY_PATTERN.test(value)) {
+    return value;
+  }
+
+  return fallback;
+}
+
+function extractTimeOfDayFromIsoDateTime(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return DEFAULT_TIME_OF_DAY;
+  }
+
+  return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(
+    2,
+    '0',
+  )}`;
+}
+
+function inferFrequencyFromLegacyInterval(intervalMinutes: unknown): ParserFrequency {
+  if (typeof intervalMinutes !== 'number' || !Number.isFinite(intervalMinutes)) {
+    return 'daily';
+  }
+
+  const minutes = Math.max(1, Math.round(intervalMinutes));
+  if (minutes >= 60 * 24 * 28) {
+    return 'monthly';
+  }
+  if (minutes >= 60 * 24 * 7) {
+    return 'weekly';
+  }
+
+  return 'daily';
+}
+
+function sanitizeParserSchedule(scheduleInput: unknown, legacyInterval?: unknown): ParserSchedule {
+  const schedule = isRecord(scheduleInput) ? scheduleInput : {};
+  const fallbackFrequency = inferFrequencyFromLegacyInterval(legacyInterval);
+  const frequency = normalizeFrequency(schedule.frequency, fallbackFrequency);
+  const timezone = DEFAULT_SETTINGS.parserSchedule.timezone;
+  const startAt = parseIsoDateTime(schedule.startAt, DEFAULT_SETTINGS.parserSchedule.startAt);
+  const interval = parsePositiveInt(schedule.interval, 1);
+  const timeOfDay = parseTimeOfDay(
+    schedule.timeOfDay,
+    extractTimeOfDayFromIsoDateTime(startAt),
   );
-  const unique = [...new Set(filtered)];
-  return unique.length ? unique : DEFAULT_SETTINGS.parserWeeklyDays;
+
+  if (frequency === 'once') {
+    return {
+      startAt,
+      timezone,
+      frequency,
+      interval: 1,
+      timeOfDay,
+      endType: 'never',
+    };
+  }
+
+  const endType = normalizeEndType(schedule.endType);
+  if (endType === 'after_count') {
+    const endAfterValue =
+      typeof schedule.endAfterOccurrences === 'number'
+        ? schedule.endAfterOccurrences
+        : Number(schedule.endAfterOccurrences);
+    const endAfterOccurrences =
+      Number.isFinite(endAfterValue) && endAfterValue > 0 ? Math.round(endAfterValue) : 1;
+
+    return {
+      startAt,
+      timezone,
+      frequency,
+      interval,
+      timeOfDay,
+      endType,
+      endAfterOccurrences,
+    };
+  }
+
+  if (endType === 'on_date') {
+    return {
+      startAt,
+      timezone,
+      frequency,
+      interval,
+      timeOfDay,
+      endType,
+      endDate: parseIsoDate(schedule.endDate) ?? startAt,
+    };
+  }
+
+  return {
+    startAt,
+    timezone,
+    frequency,
+    interval,
+    timeOfDay,
+    endType: 'never',
+  };
 }
 
-function normalizeSettings(source: Partial<AppSettings> | AppSettings): AppSettings {
+function sanitizeSettings(nextSettings: LegacyAppSettings): AppSettings {
+  const vkSources = Array.isArray(nextSettings.vkSources)
+    ? nextSettings.vkSources.map((source) => source.trim()).filter(Boolean)
+    : [...DEFAULT_SETTINGS.vkSources];
+  const reportEmails = Array.isArray(nextSettings.reportEmails)
+    ? nextSettings.reportEmails.map((email) => email.trim()).filter(Boolean)
+    : [...DEFAULT_SETTINGS.reportEmails];
+
   return {
-    vkSources: (source.vkSources ?? []).map((sourceUrl) => sourceUrl.trim()).filter(Boolean),
-    reportEmails: (source.reportEmails ?? []).map((email) => email.trim()).filter(Boolean),
-    parserScheduleMode: normalizeScheduleMode(source.parserScheduleMode),
-    parserIntervalMinutes: Math.max(
-      1,
-      Math.round(source.parserIntervalMinutes ?? DEFAULT_SETTINGS.parserIntervalMinutes),
+    vkSources,
+    reportEmails,
+    parserSchedule: sanitizeParserSchedule(
+      nextSettings.parserSchedule,
+      nextSettings.parserIntervalMinutes,
     ),
-    parserDailyTime: normalizeTime(source.parserDailyTime, DEFAULT_SETTINGS.parserDailyTime),
-    parserWeeklyDays: normalizeWeekdayCodes(source.parserWeeklyDays),
-    parserWeeklyTime: normalizeTime(source.parserWeeklyTime, DEFAULT_SETTINGS.parserWeeklyTime),
   };
 }
 
@@ -314,7 +443,9 @@ function calculateUsageFromKey(key: string, monthlyLimit: number): number {
 }
 
 function ensureVkSourcesConfigured(): void {
-  const settings = normalizeSettings(readStorage<AppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS));
+  const settings = sanitizeSettings(
+    readStorage<LegacyAppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS as LegacyAppSettings),
+  );
   const hasSources = settings.vkSources.some((source) => source.trim().length > 0);
 
   if (!hasSources) {
@@ -423,13 +554,18 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 
 export async function fetchSettings(): Promise<AppSettings> {
   return withLatency(() => {
-    const stored = readStorage<Partial<AppSettings>>(STORAGE_KEYS.settings, DEFAULT_SETTINGS);
-    return normalizeSettings(stored);
+    const stored = readStorage<LegacyAppSettings>(
+      STORAGE_KEYS.settings,
+      DEFAULT_SETTINGS as LegacyAppSettings,
+    );
+    const normalized = sanitizeSettings(stored);
+    writeStorage(STORAGE_KEYS.settings, normalized);
+    return normalized;
   });
 }
 
 export async function updateSettings(nextSettings: AppSettings): Promise<AppSettings> {
-  const sanitized = normalizeSettings(nextSettings);
+  const sanitized = sanitizeSettings(nextSettings);
 
   writeStorage(STORAGE_KEYS.settings, sanitized);
   return withLatency(() => sanitized);
@@ -555,7 +691,9 @@ export async function sendReportByEmail(period: StatisticsRequest): Promise<{ re
     });
   }
 
-  const settings = readStorage<AppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS);
+  const settings = sanitizeSettings(
+    readStorage<LegacyAppSettings>(STORAGE_KEYS.settings, DEFAULT_SETTINGS as LegacyAppSettings),
+  );
 
   if (!settings.reportEmails.length) {
     return withLatency(() => {

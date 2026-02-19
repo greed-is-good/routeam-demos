@@ -7,60 +7,247 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Card,
-  Checkbox,
   Col,
+  DatePicker,
   Descriptions,
   Divider,
   Empty,
   Form,
   Input,
   InputNumber,
+  Modal,
   Radio,
   Row,
+  Select,
   Space,
   Spin,
+  TimePicker,
   Typography,
   message,
 } from 'antd';
-import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import { useEffect, useMemo, useState } from 'react';
+import type { Dayjs } from 'dayjs';
 import type { FormProps } from 'antd';
 
 import { activateLicense, fetchLicenseInfo, fetchSettings, updateSettings } from '../api/mockApi';
 import { LicenseStatusTag } from '../components/LicenseStatusTag';
-import type { AppSettings, LicenseInfo, WeekdayCode } from '../types/models';
+import type {
+  AppSettings,
+  LicenseInfo,
+  ParserEndType,
+  ParserFrequency,
+  ParserSchedule,
+} from '../types/models';
+
+const DEFAULT_FIRST_START_OFFSET_MINUTES = 5;
+
+const FREQUENCY_OPTIONS: Array<{ label: string; value: ParserFrequency }> = [
+  { label: 'Один раз', value: 'once' },
+  { label: 'Каждый день', value: 'daily' },
+  { label: 'Каждую неделю', value: 'weekly' },
+  { label: 'Каждый месяц', value: 'monthly' },
+];
+
+const END_TYPE_OPTIONS: Array<{ label: string; value: ParserEndType }> = [
+  { label: 'Никогда', value: 'never' },
+  { label: 'После', value: 'after_count' },
+  { label: 'Дата', value: 'on_date' },
+];
+
+const FREQUENCY_LABELS: Record<ParserFrequency, string> = {
+  once: 'Один раз',
+  daily: 'Каждый день',
+  weekly: 'Каждую неделю',
+  monthly: 'Каждый месяц',
+};
+
+const EVERY_UNIT_LABELS: Record<ParserFrequency, string> = {
+  once: 'раз',
+  daily: 'день',
+  weekly: 'неделю',
+  monthly: 'месяц',
+};
 
 interface ActivateLicenseForm {
   licenseKey: string;
 }
 
-const WEEKDAY_OPTIONS: Array<{ label: string; value: WeekdayCode }> = [
-  { label: 'Пн', value: 'mon' },
-  { label: 'Вт', value: 'tue' },
-  { label: 'Ср', value: 'wed' },
-  { label: 'Чт', value: 'thu' },
-  { label: 'Пт', value: 'fri' },
-  { label: 'Сб', value: 'sat' },
-  { label: 'Вс', value: 'sun' },
-];
+interface ParserScheduleFormValues {
+  frequency: ParserFrequency;
+  interval: number;
+  endType: ParserEndType;
+  endAfterOccurrences?: number;
+  endDate?: Dayjs;
+  timeOfDay: Dayjs;
+}
 
-function isValidTime(value: string | undefined): boolean {
-  if (!value) {
-    return false;
+interface SettingsFormValues {
+  vkSources: string[];
+  reportEmails: string[];
+  parserSchedule: ParserScheduleFormValues;
+}
+
+function parseTimeToDayjs(value: string): Dayjs | null {
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+  if (!match) {
+    return null;
   }
 
-  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value.trim());
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  return dayjs().hour(hours).minute(minutes).second(0).millisecond(0);
+}
+
+function toFormValues(settings: AppSettings): SettingsFormValues {
+  const startAt = dayjs(settings.parserSchedule.startAt);
+  const fallbackTime = dayjs().add(DEFAULT_FIRST_START_OFFSET_MINUTES, 'minute').second(0).millisecond(0);
+  const parsedTime = parseTimeToDayjs(settings.parserSchedule.timeOfDay);
+  const timeOfDay =
+    parsedTime ??
+    (startAt.isValid()
+      ? dayjs().hour(startAt.hour()).minute(startAt.minute()).second(0).millisecond(0)
+      : fallbackTime);
+  const endDate = settings.parserSchedule.endDate ? dayjs(settings.parserSchedule.endDate) : undefined;
+
+  return {
+    vkSources: settings.vkSources,
+    reportEmails: settings.reportEmails,
+    parserSchedule: {
+      frequency: settings.parserSchedule.frequency,
+      interval: Math.max(1, settings.parserSchedule.interval || 1),
+      endType: settings.parserSchedule.endType,
+      endAfterOccurrences: settings.parserSchedule.endAfterOccurrences,
+      endDate: endDate?.isValid() ? endDate : undefined,
+      timeOfDay,
+    },
+  };
+}
+
+function buildNextRunAt(params: {
+  frequency: ParserFrequency;
+  interval: number;
+  timeOfDay?: Dayjs;
+  now?: Dayjs;
+}): Dayjs {
+  const now = params.now ?? dayjs();
+
+  if (params.frequency === 'once') {
+    return now
+      .add(DEFAULT_FIRST_START_OFFSET_MINUTES, 'minute')
+      .second(0)
+      .millisecond(0);
+  }
+
+  const interval = Math.max(1, Math.round(params.interval || 1));
+  const triggerTime = params.timeOfDay ?? now;
+  let nextRunAt = now
+    .hour(triggerTime.hour())
+    .minute(triggerTime.minute())
+    .second(0)
+    .millisecond(0);
+
+  if (nextRunAt.isBefore(now)) {
+    if (params.frequency === 'weekly') {
+      nextRunAt = nextRunAt.add(interval, 'week');
+    } else if (params.frequency === 'monthly') {
+      nextRunAt = nextRunAt.add(interval, 'month');
+    } else {
+      nextRunAt = nextRunAt.add(interval, 'day');
+    }
+  }
+
+  return nextRunAt;
+}
+
+function toApiSchedule(values: ParserScheduleFormValues): ParserSchedule {
+  if (values.frequency === 'once') {
+    const firstRunAt = buildNextRunAt({
+      frequency: 'once',
+      interval: 1,
+    });
+
+    return {
+      startAt: firstRunAt.toISOString(),
+      timezone: 'Europe/Moscow',
+      frequency: 'once',
+      interval: 1,
+      timeOfDay: firstRunAt.format('HH:mm'),
+      endType: 'never',
+    };
+  }
+
+  const now = dayjs();
+  const interval = Math.max(1, Math.round(values.interval || 1));
+  const normalizedEndType: ParserEndType = values.endType ?? 'never';
+  const triggerTime = values.timeOfDay || now;
+  const firstRunAt = buildNextRunAt({
+    frequency: values.frequency,
+    interval,
+    timeOfDay: triggerTime,
+    now,
+  });
+
+  const schedule: ParserSchedule = {
+    startAt: firstRunAt.toISOString(),
+    timezone: 'Europe/Moscow',
+    frequency: values.frequency,
+    interval,
+    timeOfDay: triggerTime.format('HH:mm'),
+    endType: normalizedEndType,
+  };
+
+  if (normalizedEndType === 'after_count') {
+    schedule.endAfterOccurrences = Math.max(1, Math.round(values.endAfterOccurrences || 1));
+  }
+
+  if (normalizedEndType === 'on_date' && values.endDate) {
+    schedule.endDate = values.endDate.endOf('day').toISOString();
+  }
+
+  return schedule;
+}
+
+function toApiValues(values: SettingsFormValues): AppSettings {
+  return {
+    vkSources: Array.isArray(values.vkSources) ? values.vkSources : [],
+    reportEmails: Array.isArray(values.reportEmails) ? values.reportEmails : [],
+    parserSchedule: toApiSchedule(values.parserSchedule),
+  };
+}
+
+function getEveryUnitLabel(frequency: ParserFrequency | undefined): string {
+  if (frequency) {
+    return EVERY_UNIT_LABELS[frequency];
+  }
+
+  return EVERY_UNIT_LABELS.daily;
 }
 
 export function SettingsPage(): JSX.Element {
-  const [settingsForm] = Form.useForm<AppSettings>();
+  const [settingsForm] = Form.useForm<SettingsFormValues>();
   const [licenseForm] = Form.useForm<ActivateLicenseForm>();
+  const [sourceModalForm] = Form.useForm<{ value: string }>();
+  const [emailModalForm] = Form.useForm<{ value: string }>();
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [licenseInfo, setLicenseInfo] = useState<LicenseInfo | null>(null);
+  const frequency = Form.useWatch(['parserSchedule', 'frequency'], settingsForm) as
+    | ParserFrequency
+    | undefined;
+  const endType = Form.useWatch(['parserSchedule', 'endType'], settingsForm) as
+    | ParserEndType
+    | undefined;
+  const parserSchedule = Form.useWatch('parserSchedule', settingsForm) as
+    | ParserScheduleFormValues
+    | undefined;
 
   useEffect(() => {
     let isMounted = true;
@@ -71,7 +258,7 @@ export function SettingsPage(): JSX.Element {
           return;
         }
 
-        settingsForm.setFieldsValue(settings);
+        settingsForm.setFieldsValue(toFormValues(settings));
         setLicenseInfo(license);
       })
       .catch((error) => {
@@ -90,11 +277,85 @@ export function SettingsPage(): JSX.Element {
     };
   }, [messageApi, settingsForm]);
 
-  const onSaveSettings: FormProps<AppSettings>['onFinish'] = async (values) => {
+  useEffect(() => {
+    if (frequency === 'once') {
+      settingsForm.setFieldsValue({
+        parserSchedule: {
+          ...settingsForm.getFieldValue('parserSchedule'),
+          interval: 1,
+          endType: 'never',
+          endAfterOccurrences: undefined,
+          endDate: undefined,
+        },
+      });
+    }
+  }, [frequency, settingsForm]);
+
+  const onceRunAtLabel = useMemo(
+    () =>
+      dayjs()
+        .add(DEFAULT_FIRST_START_OFFSET_MINUTES, 'minute')
+        .format('DD.MM.YYYY HH:mm'),
+    [],
+  );
+
+  const schedulePreview = useMemo(() => {
+    if (!parserSchedule?.frequency) {
+      return 'Укажите параметры расписания, чтобы увидеть итоговый режим запуска.';
+    }
+
+    if (parserSchedule.frequency === 'once') {
+      return `Запуск будет выполнен один раз через ${DEFAULT_FIRST_START_OFFSET_MINUTES} минут после сохранения.`;
+    }
+
+    const interval = Math.max(1, Math.round(parserSchedule.interval || 1));
+    const runTime = parserSchedule.timeOfDay ? parserSchedule.timeOfDay.format('HH:mm') : '--:--';
+    const frequencyLabel = FREQUENCY_LABELS[parserSchedule.frequency];
+    const unitLabel = getEveryUnitLabel(parserSchedule.frequency);
+
+    let endLabel = 'Окончание: никогда.';
+    if (parserSchedule.endType === 'after_count') {
+      endLabel = `Окончание: после ${Math.max(
+        1,
+        Math.round(parserSchedule.endAfterOccurrences || 1),
+      )} повторений.`;
+    } else if (parserSchedule.endType === 'on_date' && parserSchedule.endDate) {
+      endLabel = `Окончание: ${parserSchedule.endDate.format('DD.MM.YYYY')}.`;
+    }
+
+    return `${frequencyLabel}, каждый ${interval} ${unitLabel}, время запуска ${runTime} (МСК). ${endLabel}`;
+  }, [onceRunAtLabel, parserSchedule]);
+
+  const nextRunLabel = useMemo(() => {
+    if (!parserSchedule?.frequency) {
+      return '—';
+    }
+
+    if (parserSchedule.frequency === 'once') {
+      return `${onceRunAtLabel} (МСК)`;
+    }
+
+    const nextRunAt = buildNextRunAt({
+      frequency: parserSchedule.frequency,
+      interval: Math.max(1, Math.round(parserSchedule.interval || 1)),
+      timeOfDay: parserSchedule.timeOfDay,
+    });
+
+    if (parserSchedule.endType === 'on_date' && parserSchedule.endDate) {
+      const endBoundary = parserSchedule.endDate.endOf('day');
+      if (nextRunAt.isAfter(endBoundary)) {
+        return 'Не запланирован: дата окончания уже прошла';
+      }
+    }
+
+    return `${nextRunAt.format('DD.MM.YYYY HH:mm')} (МСК)`;
+  }, [onceRunAtLabel, parserSchedule]);
+
+  const onSaveSettings: FormProps<SettingsFormValues>['onFinish'] = async (values) => {
     setSaving(true);
     try {
-      const saved = await updateSettings(values);
-      settingsForm.setFieldsValue(saved);
+      const saved = await updateSettings(toApiValues(values));
+      settingsForm.setFieldsValue(toFormValues(saved));
       messageApi.success('Настройки сохранены');
     } catch (error) {
       const fallback = 'Не удалось сохранить настройки. Проверьте данные формы.';
@@ -133,7 +394,7 @@ export function SettingsPage(): JSX.Element {
     <>
       {contextHolder}
       <Row gutter={[16, 16]}>
-        <Col xs={24} xl={16}>
+        <Col xs={24} xl={18}>
           <Card
             className="page-card"
             title={
@@ -143,7 +404,7 @@ export function SettingsPage(): JSX.Element {
               </Space>
             }
           >
-            <Form<AppSettings>
+            <Form<SettingsFormValues>
               form={settingsForm}
               layout="vertical"
               onFinish={onSaveSettings}
@@ -157,20 +418,24 @@ export function SettingsPage(): JSX.Element {
                 {(fields, { add, remove }) => (
                   <Space direction="vertical" size={12} style={{ display: 'flex' }}>
                     {fields.length === 0 ? (
-                      <Empty
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description="Источники пока не добавлены"
-                      />
+                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Источники пока не добавлены" />
                     ) : null}
                     {fields.map((field) => (
-                      <Space key={field.key} style={{ width: '100%' }} align="start">
+                      <div
+                        key={field.key}
+                        style={{ display: 'flex', width: '100%', gap: 8, alignItems: 'flex-start' }}
+                      >
                         <Form.Item
                           {...field}
                           name={[field.name]}
-                          style={{ marginBottom: 0, flex: 1 }}
+                          style={{ marginBottom: 0, flex: 1, minWidth: 0 }}
                           rules={[{ required: true, message: 'Укажите URL или ID группы' }]}
                         >
-                          <Input placeholder="https://vk.com/city_official" />
+                          <Input
+                            placeholder="https://vk.com/city_official"
+                            readOnly
+                            style={{ width: '100%' }}
+                          />
                         </Form.Item>
                         <Button
                           danger
@@ -178,11 +443,53 @@ export function SettingsPage(): JSX.Element {
                           onClick={() => remove(field.name)}
                           aria-label="Удалить источник"
                         />
-                      </Space>
+                      </div>
                     ))}
-                    <Button icon={<PlusOutlined />} onClick={() => add()} block>
+                    <Button
+                      icon={<PlusOutlined />}
+                      onClick={() => {
+                        sourceModalForm.resetFields();
+                        setIsSourceModalOpen(true);
+                      }}
+                      block
+                    >
                       Добавить источник
                     </Button>
+                    <Modal
+                      title="Добавить источник VK"
+                      open={isSourceModalOpen}
+                      width={900}
+                      destroyOnClose
+                      okText="Добавить"
+                      cancelText="Отмена"
+                      onCancel={() => {
+                        setIsSourceModalOpen(false);
+                        sourceModalForm.resetFields();
+                      }}
+                      onOk={() => {
+                        void sourceModalForm
+                          .validateFields()
+                          .then(({ value }) => {
+                            add(value.trim());
+                            setIsSourceModalOpen(false);
+                            sourceModalForm.resetFields();
+                          })
+                          .catch(() => undefined);
+                      }}
+                    >
+                      <Form form={sourceModalForm} layout="vertical" preserve={false}>
+                        <Form.Item
+                          label="URL группы или сообщества"
+                          name="value"
+                          rules={[
+                            { required: true, message: 'Укажите URL или ID группы' },
+                            { min: 4, message: 'Слишком короткое значение' },
+                          ]}
+                        >
+                          <Input placeholder="https://vk.com/city_official" />
+                        </Form.Item>
+                      </Form>
+                    </Modal>
                   </Space>
                 )}
               </Form.List>
@@ -197,23 +504,28 @@ export function SettingsPage(): JSX.Element {
                 {(fields, { add, remove }) => (
                   <Space direction="vertical" size={12} style={{ display: 'flex' }}>
                     {fields.length === 0 ? (
-                      <Empty
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description="Список получателей пока пуст"
-                      />
+                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Список получателей пока пуст" />
                     ) : null}
                     {fields.map((field) => (
-                      <Space key={field.key} style={{ width: '100%' }} align="start">
+                      <div
+                        key={field.key}
+                        style={{ display: 'flex', width: '100%', gap: 8, alignItems: 'flex-start' }}
+                      >
                         <Form.Item
                           {...field}
                           name={[field.name]}
-                          style={{ marginBottom: 0, flex: 1 }}
+                          style={{ marginBottom: 0, flex: 1, minWidth: 0 }}
                           rules={[
                             { required: true, message: 'Введите email' },
                             { type: 'email', message: 'Некорректный email' },
                           ]}
                         >
-                          <Input prefix={<MailOutlined />} placeholder="report@cityfeedback.local" />
+                          <Input
+                            prefix={<MailOutlined />}
+                            placeholder="report@cityfeedback.local"
+                            readOnly
+                            style={{ width: '100%' }}
+                          />
                         </Form.Item>
                         <Button
                           danger
@@ -221,11 +533,53 @@ export function SettingsPage(): JSX.Element {
                           onClick={() => remove(field.name)}
                           aria-label="Удалить email"
                         />
-                      </Space>
+                      </div>
                     ))}
-                    <Button icon={<PlusOutlined />} onClick={() => add()} block>
+                    <Button
+                      icon={<PlusOutlined />}
+                      onClick={() => {
+                        emailModalForm.resetFields();
+                        setIsEmailModalOpen(true);
+                      }}
+                      block
+                    >
                       Добавить email
                     </Button>
+                    <Modal
+                      title="Добавить email получателя"
+                      open={isEmailModalOpen}
+                      width={820}
+                      destroyOnClose
+                      okText="Добавить"
+                      cancelText="Отмена"
+                      onCancel={() => {
+                        setIsEmailModalOpen(false);
+                        emailModalForm.resetFields();
+                      }}
+                      onOk={() => {
+                        void emailModalForm
+                          .validateFields()
+                          .then(({ value }) => {
+                            add(value.trim());
+                            setIsEmailModalOpen(false);
+                            emailModalForm.resetFields();
+                          })
+                          .catch(() => undefined);
+                      }}
+                    >
+                      <Form form={emailModalForm} layout="vertical" preserve={false}>
+                        <Form.Item
+                          label="Email получателя"
+                          name="value"
+                          rules={[
+                            { required: true, message: 'Введите email' },
+                            { type: 'email', message: 'Некорректный email' },
+                          ]}
+                        >
+                          <Input prefix={<MailOutlined />} placeholder="report@cityfeedback.local" />
+                        </Form.Item>
+                      </Form>
+                    </Modal>
                   </Space>
                 )}
               </Form.List>
@@ -234,99 +588,125 @@ export function SettingsPage(): JSX.Element {
 
               <Typography.Title level={5}>Запуск парсера</Typography.Title>
               <Typography.Paragraph type="secondary" style={{ marginTop: -8 }}>
-                Определяет, как часто и в какое время выполняется сбор новых комментариев.
+                Настройте повторяемость, окончание и время запуска по МСК.
               </Typography.Paragraph>
+
               <Form.Item
-                label="Режим запуска"
-                name="parserScheduleMode"
-                rules={[{ required: true, message: 'Выберите режим запуска' }]}
+                label="Повторяемость"
+                name={['parserSchedule', 'frequency']}
+                rules={[{ required: true, message: 'Выберите повторяемость' }]}
               >
-                <Radio.Group
-                  options={[
-                    { label: 'Каждые N минут', value: 'minutes' },
-                    { label: 'Ежедневно', value: 'daily' },
-                    { label: 'Еженедельно', value: 'weekly' },
-                  ]}
+                <Select options={FREQUENCY_OPTIONS} />
+              </Form.Item>
+
+              <Form.Item
+                label="Каждый"
+                name={['parserSchedule', 'interval']}
+                rules={[
+                  { required: frequency !== 'once', message: 'Укажите интервал' },
+                  { type: 'number', min: 1, message: 'Минимум 1' },
+                ]}
+              >
+                <InputNumber
+                  min={1}
+                  step={1}
+                  disabled={frequency === 'once'}
+                  addonAfter={getEveryUnitLabel(frequency)}
+                  style={{ width: '100%' }}
                 />
               </Form.Item>
 
-              <Form.Item noStyle shouldUpdate={(prev, curr) => prev.parserScheduleMode !== curr.parserScheduleMode}>
-                {({ getFieldValue }) => {
-                  const scheduleMode = getFieldValue('parserScheduleMode');
-
-                  if (scheduleMode === 'daily') {
-                    return (
+              <Form.Item
+                label="Окончание"
+                name={['parserSchedule', 'endType']}
+                rules={[{ required: true, message: 'Укажите условие окончания' }]}
+              >
+                <Radio.Group disabled={frequency === 'once'}>
+                  <Space direction="vertical" size={10}>
+                    <Radio value="never">Никогда</Radio>
+                    <Space align="center" wrap>
+                      <Radio value="after_count">После</Radio>
                       <Form.Item
-                        label="Время ежедневного запуска"
-                        name="parserDailyTime"
-                        rules={[
-                          { required: true, message: 'Укажите время в формате ЧЧ:ММ' },
-                          {
-                            validator: (_, value: string) =>
-                              isValidTime(value)
-                                ? Promise.resolve()
-                                : Promise.reject(new Error('Формат времени: ЧЧ:ММ')),
-                          },
-                        ]}
+                        name={['parserSchedule', 'endAfterOccurrences']}
+                        style={{ marginBottom: 0 }}
+                        rules={
+                          frequency !== 'once' && endType === 'after_count'
+                            ? [
+                                { required: true, message: 'Укажите количество повторений' },
+                                { type: 'number', min: 1, message: 'Минимум 1' },
+                              ]
+                            : []
+                        }
                       >
-                        <Input placeholder="09:00" />
+                        <InputNumber
+                          min={1}
+                          step={1}
+                          disabled={frequency === 'once' || endType !== 'after_count'}
+                        />
                       </Form.Item>
-                    );
-                  }
-
-                  if (scheduleMode === 'weekly') {
-                    return (
-                      <>
-                        <Form.Item
-                          label="Дни запуска"
-                          name="parserWeeklyDays"
-                          rules={[
-                            {
-                              validator: (_, value: WeekdayCode[] | undefined) =>
-                                value && value.length
-                                  ? Promise.resolve()
-                                  : Promise.reject(new Error('Выберите минимум один день')),
-                            },
-                          ]}
-                        >
-                          <Checkbox.Group options={WEEKDAY_OPTIONS} />
-                        </Form.Item>
-                        <Form.Item
-                          label="Время еженедельного запуска"
-                          name="parserWeeklyTime"
-                          rules={[
-                            { required: true, message: 'Укажите время в формате ЧЧ:ММ' },
-                            {
-                              validator: (_, value: string) =>
-                                isValidTime(value)
-                                  ? Promise.resolve()
-                                  : Promise.reject(new Error('Формат времени: ЧЧ:ММ')),
-                            },
-                          ]}
-                        >
-                          <Input placeholder="09:00" />
-                        </Form.Item>
-                      </>
-                    );
-                  }
-
-                  return (
-                    <Form.Item
-                      label="Период запуска (минуты)"
-                      name="parserIntervalMinutes"
-                      rules={[{ required: true, message: 'Укажите период' }]}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={1440}
-                        step={1}
-                        addonAfter="мин"
-                        style={{ width: '100%' }}
-                      />
-                    </Form.Item>
-                  );
-                }}
+                      <Typography.Text type="secondary">повторений</Typography.Text>
+                    </Space>
+                    <Space align="center" wrap>
+                      <Radio value="on_date">Дата</Radio>
+                      <Form.Item
+                        name={['parserSchedule', 'endDate']}
+                        style={{ marginBottom: 0 }}
+                        rules={
+                          frequency !== 'once' && endType === 'on_date'
+                            ? [
+                                { required: true, message: 'Укажите дату окончания' },
+                                {
+                                  validator(_, value: Dayjs | undefined) {
+                                    if (
+                                      !value ||
+                                      value.endOf('day').valueOf() >= dayjs().startOf('day').valueOf()
+                                    ) {
+                                      return Promise.resolve();
+                                    }
+                                    return Promise.reject(
+                                      new Error('Дата окончания не может быть в прошлом'),
+                                    );
+                                  },
+                                },
+                              ]
+                            : []
+                        }
+                      >
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          disabled={frequency === 'once' || endType !== 'on_date'}
+                        />
+                      </Form.Item>
+                    </Space>
+                  </Space>
+                </Radio.Group>
               </Form.Item>
+
+              <Form.Item
+                label="Время запуска по МСК"
+                name={['parserSchedule', 'timeOfDay']}
+                rules={[{ required: frequency !== 'once', message: 'Выберите время запуска' }]}
+              >
+                <TimePicker
+                  format="HH:mm"
+                  minuteStep={5}
+                  disabled={frequency === 'once'}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+
+              <Alert
+                type="info"
+                showIcon
+                message="Предпросмотр расписания"
+                description={
+                  <Space direction="vertical" size={2}>
+                    <Typography.Text>{schedulePreview}</Typography.Text>
+                    <Typography.Text strong>{`Следующий запуск: ${nextRunLabel}`}</Typography.Text>
+                  </Space>
+                }
+                style={{ marginBottom: 16 }}
+              />
 
               <Button type="primary" icon={<SaveOutlined />} htmlType="submit" loading={saving}>
                 Сохранить изменения
@@ -334,7 +714,7 @@ export function SettingsPage(): JSX.Element {
             </Form>
           </Card>
         </Col>
-        <Col xs={24} xl={8}>
+        <Col xs={24} xl={6}>
           <Card
             className="page-card"
             title={
@@ -349,9 +729,7 @@ export function SettingsPage(): JSX.Element {
                 <Descriptions.Item label="Статус">
                   <LicenseStatusTag status={licenseInfo.status} />
                 </Descriptions.Item>
-                <Descriptions.Item label="Ключ">
-                  {licenseInfo.maskedKey ?? 'Не задан'}
-                </Descriptions.Item>
+                <Descriptions.Item label="Ключ">{licenseInfo.maskedKey ?? 'Не задан'}</Descriptions.Item>
                 <Descriptions.Item label="Срок действия">
                   {licenseInfo.expiresAt
                     ? new Date(licenseInfo.expiresAt).toLocaleString('ru-RU')
