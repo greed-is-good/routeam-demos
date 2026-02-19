@@ -52,12 +52,6 @@ const FREQUENCY_OPTIONS: Array<{ label: string; value: ParserFrequency }> = [
   { label: 'Каждый месяц', value: 'monthly' },
 ];
 
-const END_TYPE_OPTIONS: Array<{ label: string; value: ParserEndType }> = [
-  { label: 'Никогда', value: 'never' },
-  { label: 'После', value: 'after_count' },
-  { label: 'Дата', value: 'on_date' },
-];
-
 const FREQUENCY_LABELS: Record<ParserFrequency, string> = {
   once: 'Один раз',
   daily: 'Каждый день',
