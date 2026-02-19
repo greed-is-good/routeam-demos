@@ -17,25 +17,18 @@ export interface UserSession {
   expiresAt: string;
 }
 
-export type ParserFrequency = 'once' | 'daily' | 'weekly' | 'monthly';
+export type ParserScheduleMode = 'minutes' | 'daily' | 'weekly';
 
-export type ParserEndType = 'never' | 'after_count' | 'on_date';
-
-export interface ParserSchedule {
-  startAt: string;
-  timezone: string;
-  frequency: ParserFrequency;
-  interval: number;
-  timeOfDay: string;
-  endType: ParserEndType;
-  endAfterOccurrences?: number;
-  endDate?: string;
-}
+export type WeekdayCode = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
 export interface AppSettings {
   vkSources: string[];
   reportEmails: string[];
-  parserSchedule: ParserSchedule;
+  parserScheduleMode: ParserScheduleMode;
+  parserIntervalMinutes: number;
+  parserDailyTime: string;
+  parserWeeklyDays: WeekdayCode[];
+  parserWeeklyTime: string;
 }
 
 export type LicenseStatus =
