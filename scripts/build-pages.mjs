@@ -13,6 +13,9 @@ const commentTargetDir = path.join(outputDir, 'comment-statistics-ui');
 const floraSourceDir = path.join(repoRoot, 'flora-guard-mvp');
 const floraTargetDir = path.join(outputDir, 'flora-guard-mvp');
 
+const agrosoyuzDistDir = path.join(repoRoot, 'agrosoyuz-portal', 'dist');
+const agrosoyuzTargetDir = path.join(outputDir, 'agrosoyuz-portal');
+
 const landingHtml = `<!doctype html>
 <html lang="ru">
   <head>
@@ -85,6 +88,10 @@ const landingHtml = `<!doctype html>
           <strong>flora-guard-mvp</strong>
           <span>Демо-лендинг Flora Guard</span>
         </a>
+        <a class="card" href="./agrosoyuz-portal/">
+          <strong>agrosoyuz-portal</strong>
+          <span>Мобильный frontend-прототип портала фермера Агросоюз</span>
+        </a>
       </section>
     </main>
   </body>
@@ -97,11 +104,12 @@ async function buildPagesBundle() {
 
   await cp(commentDistDir, commentTargetDir, { recursive: true });
   await cp(floraSourceDir, floraTargetDir, { recursive: true });
+  await cp(agrosoyuzDistDir, agrosoyuzTargetDir, { recursive: true });
 
   await writeFile(path.join(outputDir, 'index.html'), landingHtml, 'utf8');
   await writeFile(path.join(outputDir, '.nojekyll'), '', 'utf8');
 
-  process.stdout.write('Prepared .pages-dist with comment-statistics-ui and flora-guard-mvp.\n');
+  process.stdout.write('Prepared .pages-dist with comment-statistics-ui, flora-guard-mvp and agrosoyuz-portal.\n');
 }
 
 buildPagesBundle().catch((error) => {
