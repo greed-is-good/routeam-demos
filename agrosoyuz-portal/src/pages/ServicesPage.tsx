@@ -8,28 +8,27 @@ const workSteps = ['Выберите услугу', 'Оставьте заявк
 export function ServicesPage() {
   return (
     <AppLayout>
-      <section className="relative overflow-hidden rounded-[32px] bg-[#245943] p-5 text-white shadow-[0_28px_64px_rgba(36,89,67,0.23)]">
-        <div className="absolute inset-0 services-hero-field opacity-95" />
-        <div className="absolute -right-10 top-8 h-32 w-32 rounded-full bg-[#8BCB5B]/22 blur-2xl" />
+      <section className="relative overflow-hidden rounded-[28px] bg-[#245943] p-5 text-white shadow-[0_18px_42px_rgba(36,89,67,0.18)]">
+        <div className="absolute inset-0 services-hero-field" />
         <div className="relative">
-          <div className="mb-14 flex items-center justify-between">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/18 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)] backdrop-blur">
+          <div className="mb-10 flex items-center justify-between">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[20px] bg-[#DCE7DA] text-[#245943] shadow-[0_8px_18px_rgba(18,36,28,0.16)]">
               <Sprout aria-hidden="true" size={23} />
             </span>
-            <span className="rounded-full bg-white/16 px-3 py-2 text-xs font-bold backdrop-blur">
+            <span className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#245943]">
               MVP портал
             </span>
           </div>
-          <h1 className="max-w-[300px] text-[32px] font-black leading-[1.03] tracking-[0]">
+          <h1 className="max-w-[300px] text-[31px] font-black leading-[1.06] tracking-[0]">
             Услуги для вашего хозяйства
           </h1>
-          <p className="mt-3 max-w-[312px] text-[15px] leading-relaxed text-white/82">
+          <p className="mt-3 max-w-[312px] text-[15px] font-semibold leading-relaxed text-white">
             Выберите направление и оставьте заявку. Менеджер свяжется с вами для уточнения деталей.
           </p>
         </div>
       </section>
 
-      <section className="-mt-6 ml-4 mr-4 rounded-[26px] border border-[#E2DED5] bg-white/96 p-4 shadow-[0_20px_46px_rgba(24,38,31,0.12)]">
+      <section className="mt-4 rounded-[24px] border border-[#E2DED5] bg-white p-4 shadow-[0_12px_28px_rgba(24,38,31,0.07)]">
         <div className="flex items-start gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] bg-[#DCE7DA] text-[#245943]">
             <ClipboardCheck aria-hidden="true" size={21} />
