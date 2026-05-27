@@ -10,6 +10,25 @@ interface LocationState {
   toast?: string;
 }
 
+function formatRequestsCount(count: number) {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return `${count} заявок`;
+  }
+
+  if (lastDigit === 1) {
+    return `${count} заявка`;
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return `${count} заявки`;
+  }
+
+  return `${count} заявок`;
+}
+
 export function RequestsPage() {
   const { requests } = useRequests();
   const location = useLocation();
@@ -34,16 +53,20 @@ export function RequestsPage() {
         </div>
       ) : null}
 
-      <section className="mb-5 overflow-hidden rounded-[30px] bg-[#245943] p-5 text-white shadow-[0_24px_54px_rgba(36,89,67,0.22)]">
-        <p className="text-sm font-bold text-white/72">Личный кабинет</p>
-        <h1 className="mt-2 text-[30px] font-black leading-tight">Мои заявки</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-white/78">
-          Здесь отображаются отправленные заявки и их текущий статус
+      <section className="mb-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-[28px] font-black leading-tight text-[#18261F]">Мои заявки</h1>
+          <span className="shrink-0 rounded-full bg-[#DCE7DA] px-3 py-1.5 text-xs font-black text-[#245943]">
+            {formatRequestsCount(requests.length)}
+          </span>
+        </div>
+        <p className="mt-1.5 text-[14px] font-semibold leading-relaxed text-[#69756E]">
+          Отслеживайте статус отправленных заявок
         </p>
       </section>
 
       {requests.length > 0 ? (
-        <section className="grid gap-4">
+        <section className="grid gap-2.5">
           {requests.map((request) => (
             <RequestCard key={request.id} request={request} />
           ))}
