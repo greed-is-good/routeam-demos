@@ -31,3 +31,36 @@ select,
 textarea {
   font: inherit;
 }
+
+.onboarding-field span {
+  position: absolute;
+  left: -24%;
+  width: 150%;
+  height: 64px;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 243, 236, 0.18);
+  background: linear-gradient(90deg, rgba(139, 203, 91, 0.24), rgba(36, 89, 67, 0.08), rgba(236, 228, 213, 0.18));
+}
+
+.onboarding-field span:nth-child(1) { top: 2%; }
+.onboarding-field span:nth-child(2) { top: 13%; }
+.onboarding-field span:nth-child(3) { top: 24%; }
+.onboarding-field span:nth-child(4) { top: 35%; }
+.onboarding-field span:nth-child(5) { top: 46%; }
+.onboarding-field span:nth-child(6) { top: 57%; }
+.onboarding-field span:nth-child(7) { top: 68%; }
+.onboarding-field span:nth-child(8) { top: 79%; }
+.onboarding-field span:nth-child(9) { top: 90%; }
+
+.mini-field {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.28), transparent 18%),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0 10px, transparent 10px 22px);
+}
+
+.services-hero-field {
+  background:
+    radial-gradient(circle at 76% 22%, rgba(236, 228, 213, 0.85), transparent 16%),
+    repeating-linear-gradient(130deg, rgba(255, 255, 255, 0.12) 0 12px, rgba(255, 255, 255, 0.02) 12px 30px),
+    linear-gradient(145deg, #1f4d3a, #2f6b4f);
+}

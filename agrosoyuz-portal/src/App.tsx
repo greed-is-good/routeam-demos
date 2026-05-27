@@ -1,17 +1,24 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { NewRequestPage } from './pages/NewRequestPage';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { ProtectedRoute } from './pages/ProtectedRoute';
 import { RegisterPage } from './pages/RegisterPage';
 import { RequestDetailsPage } from './pages/RequestDetailsPage';
 import { RequestSuccessPage } from './pages/RequestSuccessPage';
 import { RequestsPage } from './pages/RequestsPage';
 import { ServicesPage } from './pages/ServicesPage';
+import { hasSeenOnboarding } from './pages/OnboardingPage';
+
+function RootRedirect() {
+  return <Navigate replace to={hasSeenOnboarding() ? '/services' : '/onboarding'} />;
+}
 
 export function App() {
   return (
     <Routes>
-      <Route element={<Navigate replace to="/services" />} path="/" />
+      <Route element={<RootRedirect />} path="/" />
+      <Route element={<OnboardingPage />} path="/onboarding" />
       <Route element={<ServicesPage />} path="/services" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />

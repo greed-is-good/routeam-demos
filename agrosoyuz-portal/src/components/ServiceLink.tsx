@@ -19,7 +19,7 @@ export function ServiceLink({ service }: { service: ServiceConfig }) {
 
   return (
     <button
-      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-white/70 px-4 py-3 text-left text-[15px] font-semibold text-[#18261F] transition hover:bg-white"
+      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-white/78 px-4 py-3 text-left text-[15px] font-bold text-[#18261F] shadow-[inset_0_0_0_1px_rgba(226,222,213,0.54)] transition hover:bg-white"
       onClick={handleOpenService}
       type="button"
     >

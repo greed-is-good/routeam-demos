@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 export function Header() {
@@ -13,7 +13,7 @@ export function Header() {
 
   return (
     <header className="flex items-center justify-between px-5 pb-4 pt-5">
-      <Link to="/services" className="text-lg font-bold tracking-[0] text-[#18261F]" aria-label="Агросоюз">
+      <Link to="/services" className="text-lg font-black tracking-[0] text-[#18261F]" aria-label="Агросоюз">
         Агросоюз
       </Link>
 
@@ -21,7 +21,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Link
             to="/requests"
-            className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#245943] shadow-[0_8px_20px_rgba(24,38,31,0.06)]"
+            className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-bold text-[#245943] shadow-[0_8px_20px_rgba(24,38,31,0.08)]"
           >
             Мои заявки
           </Link>
@@ -38,7 +38,7 @@ export function Header() {
       ) : (
         <Link
           to="/login"
-          className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#245943] shadow-[0_8px_20px_rgba(24,38,31,0.06)]"
+          className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-bold text-[#245943] shadow-[0_8px_20px_rgba(24,38,31,0.08)]"
         >
           Войти
         </Link>
