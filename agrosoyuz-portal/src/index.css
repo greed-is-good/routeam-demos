@@ -64,3 +64,34 @@ textarea {
     repeating-linear-gradient(130deg, rgba(255, 255, 255, 0.12) 0 12px, rgba(255, 255, 255, 0.02) 12px 30px),
     linear-gradient(145deg, #1f4d3a, #2f6b4f);
 }
+
+.bento-field-dark {
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.42), transparent 14%),
+    repeating-linear-gradient(128deg, rgba(36, 89, 67, 0.13) 0 10px, transparent 10px 24px);
+}
+
+.bento-lines-light {
+  background:
+    radial-gradient(circle at 82% 14%, rgba(139, 203, 91, 0.26), transparent 18%),
+    repeating-linear-gradient(132deg, rgba(255, 255, 255, 0.12) 0 8px, transparent 8px 22px);
+}
+
+.bento-grain {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(220, 231, 218, 0.9), transparent 18%),
+    linear-gradient(135deg, rgba(236, 228, 213, 0.55), transparent 46%);
+}
+
+.bento-field-sand {
+  background:
+    repeating-linear-gradient(128deg, rgba(36, 89, 67, 0.08) 0 9px, transparent 9px 25px),
+    radial-gradient(circle at 78% 8%, rgba(255, 255, 255, 0.56), transparent 18%);
+}
+
+.bento-document {
+  background:
+    linear-gradient(90deg, rgba(36, 89, 67, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(36, 89, 67, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
