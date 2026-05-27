@@ -98,6 +98,27 @@ const landingHtml = `<!doctype html>
 </html>
 `;
 
+const notFoundHtml = `<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+    <script>
+      const path = window.location.pathname;
+      const prefix = '/routeam-demos/agrosoyuz-portal/';
+      if (path.startsWith(prefix)) {
+        const route = path.slice(prefix.length);
+        window.location.replace(prefix + '#/' + route + window.location.search);
+      } else {
+        window.location.replace('/routeam-demos/');
+      }
+    </script>
+  </head>
+  <body></body>
+</html>
+`;
+
 async function buildPagesBundle() {
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
@@ -107,6 +128,7 @@ async function buildPagesBundle() {
   await cp(agrosoyuzDistDir, agrosoyuzTargetDir, { recursive: true });
 
   await writeFile(path.join(outputDir, 'index.html'), landingHtml, 'utf8');
+  await writeFile(path.join(outputDir, '404.html'), notFoundHtml, 'utf8');
   await writeFile(path.join(outputDir, '.nojekyll'), '', 'utf8');
 
   process.stdout.write('Prepared .pages-dist with comment-statistics-ui, flora-guard-mvp and agrosoyuz-portal.\n');
