@@ -8,7 +8,7 @@ interface FormFieldRendererProps {
 }
 
 const inputBaseClassName =
-  'min-h-12 w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#18261F] outline-none transition placeholder:text-[#8A918B] focus:border-[#245943]';
+  'min-h-[54px] w-full rounded-[20px] border bg-[#FBFAF6] px-4 py-3 text-[15px] font-semibold text-[#18261F] outline-none transition placeholder:text-[#8A918B] focus:border-[#245943] focus:bg-white focus:shadow-[0_0_0_4px_rgba(36,89,67,0.08)]';
 
 export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRendererProps) {
   const borderClassName = error ? 'border-[#B56A62]' : 'border-[#E2DED5]';
@@ -16,14 +16,14 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
 
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-[#3C4B43]">
+      <span className="text-sm font-bold text-[#3C4B43]">
         {field.label}
         {requiredMark}
       </span>
 
       {field.type === 'textarea' ? (
         <textarea
-          className={`${inputBaseClassName} ${borderClassName} min-h-28 resize-none`}
+          className={`${inputBaseClassName} ${borderClassName} min-h-32 resize-none`}
           onChange={(event) => onChange(field.name, event.target.value)}
           placeholder={field.placeholder}
           value={value}
@@ -52,10 +52,10 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
             return (
               <button
                 className={[
-                  'min-h-11 rounded-2xl border px-4 py-2 text-left text-[15px] font-semibold transition',
+                  'min-h-[48px] rounded-[18px] border px-4 py-2 text-left text-[15px] font-bold transition',
                   isSelected
-                    ? 'border-[#245943] bg-[#DCE7DA] text-[#245943]'
-                    : 'border-[#E2DED5] bg-white text-[#3C4B43]',
+                    ? 'border-[#245943] bg-[#DCE7DA] text-[#245943] shadow-[0_8px_18px_rgba(36,89,67,0.1)]'
+                    : 'border-[#E2DED5] bg-[#FBFAF6] text-[#3C4B43]',
                 ].join(' ')}
                 key={option}
                 onClick={() => onChange(field.name, option)}

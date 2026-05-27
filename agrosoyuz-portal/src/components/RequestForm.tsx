@@ -77,8 +77,11 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
 
   return (
     <form className="grid gap-5" onSubmit={handleSubmit}>
-      <section className="rounded-card border border-[#E2DED5] bg-white p-4">
-        <h2 className="mb-4 text-lg font-bold">Данные заявителя</h2>
+      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-black">Данные заявителя</h2>
+          <span className="rounded-full bg-[#DCE7DA] px-3 py-1 text-xs font-black text-[#245943]">Профиль</span>
+        </div>
         <div className="grid gap-4">
           {commonRequestFields.map((field) => (
             <FormFieldRenderer
@@ -92,8 +95,11 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
         </div>
       </section>
 
-      <section className="rounded-card border border-[#E2DED5] bg-white p-4">
-        <h2 className="mb-4 text-lg font-bold">Параметры услуги</h2>
+      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-black">Параметры услуги</h2>
+          <span className="rounded-full bg-[#ECE4D5] px-3 py-1 text-xs font-black text-[#6A5635]">Mock</span>
+        </div>
         <div className="grid gap-4">
           {service.fields.map((field) => (
             <FormFieldRenderer
@@ -107,7 +113,7 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
         </div>
       </section>
 
-      <p className="rounded-2xl bg-[#ECE4D5] px-4 py-3 text-sm leading-relaxed text-[#536259]">
+      <p className="rounded-[22px] border border-[#E2DED5] bg-[#ECE4D5] px-4 py-3 text-sm font-semibold leading-relaxed text-[#536259]">
         Состав данных предварительный и будет уточнён для выбранной услуги.
       </p>
 

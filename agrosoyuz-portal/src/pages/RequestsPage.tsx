@@ -34,15 +34,16 @@ export function RequestsPage() {
         </div>
       ) : null}
 
-      <section className="mb-5">
-        <h1 className="text-[28px] font-bold leading-tight">Мои заявки</h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-[#69756E]">
+      <section className="mb-5 overflow-hidden rounded-[30px] bg-[#245943] p-5 text-white shadow-[0_24px_54px_rgba(36,89,67,0.22)]">
+        <p className="text-sm font-bold text-white/72">Личный кабинет</p>
+        <h1 className="mt-2 text-[30px] font-black leading-tight">Мои заявки</h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-white/78">
           Здесь отображаются отправленные заявки и их текущий статус
         </p>
       </section>
 
       {requests.length > 0 ? (
-        <section className="grid gap-3">
+        <section className="grid gap-4">
           {requests.map((request) => (
             <RequestCard key={request.id} request={request} />
           ))}

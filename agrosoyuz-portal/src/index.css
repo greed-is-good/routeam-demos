@@ -25,6 +25,13 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, "Segoe UI", Arial, sans-serif;
 }
 
+.app-surface {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(220, 231, 218, 0.8), transparent 26%),
+    radial-gradient(circle at 88% 18%, rgba(236, 228, 213, 0.95), transparent 24%),
+    #f6f3ec;
+}
+
 button,
 input,
 select,

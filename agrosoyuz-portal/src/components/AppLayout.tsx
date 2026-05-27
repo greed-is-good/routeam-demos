@@ -9,9 +9,9 @@ export function AppLayout({ children, withHeader = true }: { children: ReactNode
 
   return (
     <MobilePageContainer>
-      <div className="flex min-h-screen flex-col">
+      <div className="app-surface relative flex min-h-screen flex-col md:min-h-[844px]">
         {withHeader ? <Header /> : null}
-        <main className="flex-1 px-5 pb-8">{children}</main>
+        <main className="relative z-10 flex-1 px-5 pb-8">{children}</main>
         {isAuthenticated ? <BottomNavigation /> : null}
       </div>
     </MobilePageContainer>

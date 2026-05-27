@@ -8,9 +8,9 @@ interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClassNames = {
-  primary: 'bg-[#245943] text-white shadow-[0_12px_24px_rgba(36,89,67,0.18)] hover:bg-[#1f4d3a]',
-  secondary: 'border border-[#D7D0C3] bg-white text-[#245943] hover:bg-[#F1EEE7]',
-  danger: 'bg-[#7D3F3F] text-white hover:bg-[#6E3737]',
+  primary: 'bg-[#245943] text-white shadow-[0_16px_30px_rgba(36,89,67,0.22)] hover:bg-[#1f4d3a]',
+  secondary: 'border border-[#D7D0C3] bg-white text-[#245943] shadow-[0_10px_22px_rgba(24,38,31,0.06)] hover:bg-[#F1EEE7]',
+  danger: 'bg-[#7D3F3F] text-white shadow-[0_14px_26px_rgba(125,63,63,0.18)] hover:bg-[#6E3737]',
 };
 
 export function PrimaryButton({
@@ -25,7 +25,7 @@ export function PrimaryButton({
   return (
     <button
       className={[
-        'inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-[15px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex min-h-[52px] items-center justify-center rounded-[22px] px-5 py-3 text-[15px] font-black transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60',
         variantClassNames[variant],
         fullWidth ? 'w-full' : '',
         className,

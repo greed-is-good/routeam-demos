@@ -48,53 +48,56 @@ export function RequestDetails({ request, onDelete }: { request: FarmRequest; on
 
   return (
     <article className="grid gap-4">
-      <section className="rounded-card border border-[#E2DED5] bg-white p-4">
+      <section className="relative overflow-hidden rounded-[30px] bg-[#245943] p-5 text-white shadow-[0_24px_54px_rgba(36,89,67,0.22)]">
+        <div className="absolute inset-0 bento-lines-light opacity-60" />
         <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm text-[#69756E]">Номер заявки</p>
-            <h1 className="mt-1 text-2xl font-bold">{request.number}</h1>
+          <div className="relative">
+            <p className="text-sm font-bold text-white/72">Номер заявки</p>
+            <h1 className="mt-1 text-[30px] font-black">{request.number}</h1>
           </div>
           <StatusBadge status={request.status} />
         </div>
-        <div className="grid gap-3 text-sm">
-          <div>
-            <p className="text-[#69756E]">Услуга</p>
-            <p className="mt-1 text-base font-semibold">{request.serviceName}</p>
+        <div className="relative grid gap-3 text-sm">
+          <div className="rounded-[20px] bg-white/14 p-3 backdrop-blur">
+            <p className="text-white/62">Услуга</p>
+            <p className="mt-1 text-base font-black">{request.serviceName}</p>
           </div>
-          <div>
-            <p className="text-[#69756E]">Категория</p>
-            <p className="mt-1 font-semibold">{request.categoryName}</p>
-          </div>
-          <div>
-            <p className="text-[#69756E]">Дата создания</p>
-            <p className="mt-1 font-semibold">{request.createdAt}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[20px] bg-white/14 p-3 backdrop-blur">
+              <p className="text-white/62">Категория</p>
+              <p className="mt-1 font-bold">{request.categoryName}</p>
+            </div>
+            <div className="rounded-[20px] bg-white/14 p-3 backdrop-blur">
+              <p className="text-white/62">Дата</p>
+              <p className="mt-1 font-bold">{request.createdAt}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-card border border-[#E2DED5] bg-white p-4">
-        <h2 className="text-lg font-bold">Переданные данные</h2>
+      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
+        <h2 className="text-lg font-black">Переданные данные</h2>
         <dl className="mt-4 grid gap-3">
           {displayFields.map((field) => (
-            <div className="rounded-2xl bg-[#F6F3EC] px-4 py-3" key={field.name}>
-              <dt className="text-xs font-semibold uppercase tracking-[0.04em] text-[#69756E]">{field.label}</dt>
-              <dd className="mt-1 text-[15px] font-semibold text-[#18261F]">{field.value}</dd>
+            <div className="rounded-[20px] border border-[#E2DED5] bg-[#F6F3EC] px-4 py-3" key={field.name}>
+              <dt className="text-xs font-black uppercase tracking-[0.04em] text-[#69756E]">{field.label}</dt>
+              <dd className="mt-1 text-[15px] font-bold text-[#18261F]">{field.value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
-      <section className="rounded-card border border-[#E2DED5] bg-white p-4">
-        <h2 className="text-lg font-bold">{statusInfo.title}</h2>
+      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
+        <h2 className="text-lg font-black">{statusInfo.title}</h2>
         <p className="mt-2 text-sm leading-relaxed text-[#69756E]">{statusInfo.description}</p>
       </section>
 
-      <section className="rounded-card border border-[#E2DED5] bg-[#ECE4D5] p-4">
-        <h2 className="text-lg font-bold">Контакт для уточнений</h2>
+      <section className="rounded-[28px] border border-[#E2DED5] bg-[#ECE4D5] p-4 shadow-[0_18px_38px_rgba(74,59,38,0.08)]">
+        <h2 className="text-lg font-black">Контакт для уточнений</h2>
         <p className="mt-2 text-sm leading-relaxed text-[#536259]">
           Если потребуются дополнительные данные, менеджер свяжется с вами по телефону:
         </p>
-        <p className="mt-3 text-lg font-bold text-[#18261F]">{phone}</p>
+        <p className="mt-3 rounded-[20px] bg-white/62 px-4 py-3 text-lg font-black text-[#18261F]">{phone}</p>
       </section>
 
       {canDelete ? (
