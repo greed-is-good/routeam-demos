@@ -66,7 +66,7 @@ export function RequestsPage() {
       </section>
 
       {requests.length > 0 ? (
-        <section className="grid gap-2.5">
+        <section className="grid gap-2.5 md:grid-cols-2">
           {requests.map((request) => (
             <RequestCard key={request.id} request={request} />
           ))}

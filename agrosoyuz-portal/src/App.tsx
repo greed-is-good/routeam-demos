@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { NewRequestPage } from './pages/NewRequestPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { ProtectedRoute } from './pages/ProtectedRoute';
 import { RegisterPage } from './pages/RegisterPage';
 import { RequestDetailsPage } from './pages/RequestDetailsPage';
@@ -45,6 +46,14 @@ export function App() {
           </ProtectedRoute>
         }
         path="/requests"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+        path="/profile"
       />
       <Route
         element={

@@ -9,6 +9,7 @@ interface AuthContextValue {
   login: (phone: string, password: string) => void;
   loginDemo: () => void;
   register: (input: RegisterInput) => void;
+  updateProfile: (profile: MockUser) => void;
   logout: () => void;
 }
 
@@ -31,12 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       register: (input) => {
         const newUser = {
+          ...mockUser,
           fullName: input.fullName || mockUser.fullName,
           farmName: input.farmName || mockUser.farmName,
           phone: input.phone || mockUser.phone,
         };
         saveAuthUser(newUser);
         setUser(newUser);
+      },
+      updateProfile: (profile) => {
+        saveAuthUser(profile);
+        setUser(profile);
       },
       logout: () => {
         clearAuthUser();

@@ -12,7 +12,7 @@ export function ServicesPage() {
         </p>
       </section>
 
-      <section className="grid gap-3" aria-label="Каталог услуг">
+      <section className="grid gap-3 md:grid-cols-2" aria-label="Каталог услуг">
         {serviceCategories.map((category) => (
           <ServiceCategoryCard category={category} key={category.categorySlug} />
         ))}

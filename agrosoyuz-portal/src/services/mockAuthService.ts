@@ -18,7 +18,10 @@ export function getStoredAuthUser(): MockUser | null {
   }
 
   try {
-    return JSON.parse(rawUser) as MockUser;
+    return {
+      ...mockUser,
+      ...(JSON.parse(rawUser) as Partial<MockUser>),
+    };
   } catch {
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
     return null;

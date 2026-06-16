@@ -7,15 +7,13 @@ import type { FieldConfig, ServiceConfig } from '../types/forms';
 import { FormFieldRenderer } from './FormFieldRenderer';
 import { PrimaryButton } from './PrimaryButton';
 
-function buildInitialValues(fields: FieldConfig[], user: ReturnType<typeof useAuth>['user']) {
+const requestContextFieldNames = ['location', 'comment'];
+
+function buildInitialValues(fields: FieldConfig[]) {
   const values = fields.reduce<Record<string, string>>((result, field) => {
     result[field.name] = '';
     return result;
   }, {});
-
-  values.applicantName = user?.fullName ?? '';
-  values.farmName = user?.farmName ?? '';
-  values.phone = user?.phone ?? '';
 
   return values;
 }
@@ -23,15 +21,19 @@ function buildInitialValues(fields: FieldConfig[], user: ReturnType<typeof useAu
 export function RequestForm({ service }: { service: ServiceConfig }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const fields = useMemo(() => [...commonRequestFields, ...service.fields], [service.fields]);
-  const [values, setValues] = useState<Record<string, string>>(() => buildInitialValues(fields, user));
+  const requestContextFields = useMemo(
+    () => commonRequestFields.filter((field) => requestContextFieldNames.includes(field.name)),
+    [],
+  );
+  const fields = useMemo(() => [...requestContextFields, ...service.fields], [requestContextFields, service.fields]);
+  const [values, setValues] = useState<Record<string, string>>(() => buildInitialValues(fields));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    setValues(buildInitialValues(fields, user));
+    setValues(buildInitialValues(fields));
     setErrors({});
-  }, [fields, service.serviceSlug, user]);
+  }, [fields, service.serviceSlug]);
 
   const handleChange = (name: string, value: string) => {
     setValues((currentValues) => ({
@@ -71,7 +73,12 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
 
     setSubmitting(true);
     await new Promise((resolve) => window.setTimeout(resolve, 520));
-    const createdRequest = createRequest(service, values);
+    const createdRequest = createRequest(service, {
+      applicantName: user?.fullName ?? '',
+      farmName: user?.farmName ?? '',
+      phone: user?.phone ?? '',
+      ...values,
+    });
     navigate(`/requests/success/${createdRequest.id}`);
   };
 
@@ -79,29 +86,11 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
     <form className="grid gap-5" onSubmit={handleSubmit}>
       <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-black">Данные заявителя</h2>
-          <span className="rounded-full bg-[#DCE7DA] px-3 py-1 text-xs font-black text-[#245943]">Профиль</span>
-        </div>
-        <div className="grid gap-4">
-          {commonRequestFields.map((field) => (
-            <FormFieldRenderer
-              error={errors[field.name]}
-              field={field}
-              key={field.name}
-              onChange={handleChange}
-              value={values[field.name] ?? ''}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-black">Параметры услуги</h2>
+          <h2 className="text-lg font-black">Данные заявки</h2>
           <span className="rounded-full bg-[#ECE4D5] px-3 py-1 text-xs font-black text-[#6A5635]">Mock</span>
         </div>
         <div className="grid gap-4">
-          {service.fields.map((field) => (
+          {fields.map((field) => (
             <FormFieldRenderer
               error={errors[field.name]}
               field={field}
@@ -114,7 +103,7 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
       </section>
 
       <p className="rounded-[22px] border border-[#E2DED5] bg-[#ECE4D5] px-4 py-3 text-sm font-semibold leading-relaxed text-[#536259]">
-        Состав данных предварительный и будет уточнён для выбранной услуги.
+        Данные заявителя будут взяты из раздела «Мой профиль». Состав полей заявки предварительный.
       </p>
 
       <PrimaryButton fullWidth loading={isSubmitting} type="submit">
