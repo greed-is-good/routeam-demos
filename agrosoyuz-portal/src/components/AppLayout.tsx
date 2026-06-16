@@ -11,7 +11,14 @@ export function AppLayout({ children, withHeader = true }: { children: ReactNode
     <MobilePageContainer>
       <div className="app-surface relative flex min-h-screen flex-col md:min-h-[844px]">
         {withHeader ? <Header /> : null}
-        <main className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-5 pb-8 md:px-8">{children}</main>
+        <main
+          className={[
+            'relative z-10 mx-auto w-full max-w-5xl flex-1 px-5 md:px-8',
+            isAuthenticated ? 'pb-32' : 'pb-8',
+          ].join(' ')}
+        >
+          {children}
+        </main>
         {isAuthenticated ? <BottomNavigation /> : null}
       </div>
     </MobilePageContainer>
