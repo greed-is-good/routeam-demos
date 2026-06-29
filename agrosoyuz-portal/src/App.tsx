@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { NewRequestPage } from './pages/NewRequestPage';
 import { OnboardingPage } from './pages/OnboardingPage';
@@ -10,9 +11,16 @@ import { RequestSuccessPage } from './pages/RequestSuccessPage';
 import { RequestsPage } from './pages/RequestsPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { hasSeenOnboarding } from './pages/OnboardingPage';
+import { useAuth } from './hooks/useAuth';
 
 function RootRedirect() {
-  return <Navigate replace to={hasSeenOnboarding() ? '/services' : '/onboarding'} />;
+  const { isAuthenticated } = useAuth();
+
+  if (!hasSeenOnboarding()) {
+    return <Navigate replace to="/onboarding" />;
+  }
+
+  return <Navigate replace to={isAuthenticated ? '/home' : '/services'} />;
 }
 
 export function App() {
@@ -20,6 +28,14 @@ export function App() {
     <Routes>
       <Route element={<RootRedirect />} path="/" />
       <Route element={<OnboardingPage />} path="/onboarding" />
+      <Route
+        element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        }
+        path="/home"
+      />
       <Route element={<ServicesPage />} path="/services" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />

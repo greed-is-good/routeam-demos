@@ -13,7 +13,11 @@ export function Header() {
 
   return (
     <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 pb-3 pt-5 md:px-8">
-      <Link to="/services" className="text-lg font-black tracking-[0] text-[#18261F]" aria-label="Агросоюз">
+      <Link
+        to={isAuthenticated ? '/home' : '/services'}
+        className="text-lg font-black tracking-[0] text-[#18261F]"
+        aria-label="Агросоюз"
+      >
         Агросоюз
       </Link>
 
