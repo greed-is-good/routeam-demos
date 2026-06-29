@@ -1,4 +1,4 @@
-import { ArrowRight, ClipboardList, Plus, Sprout, UserRound } from 'lucide-react';
+import { ArrowRight, ClipboardList, Plus, Tractor, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../components/AppLayout';
 import { EmptyState } from '../components/EmptyState';
@@ -37,7 +37,7 @@ export function HomePage() {
 
   return (
     <AppLayout>
-      <section className="mb-4 rounded-[28px] border border-[#D9E2D6] bg-[#DCE7DA] p-4 shadow-[0_14px_34px_rgba(24,38,31,0.08)]">
+      <section className="agro-card mb-4 rounded-[30px] border border-[#D9E2D6] bg-[#DCE7DA] p-4 shadow-[0_18px_44px_rgba(24,38,31,0.1)] md:p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-black text-[#245943]">{user?.farmName ?? 'Хозяйство'}</p>
@@ -45,21 +45,23 @@ export function HomePage() {
               {getFirstName(user?.fullName ?? '')}, что нужно хозяйству?
             </h1>
           </div>
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#245943]">
-            <Sprout aria-hidden="true" size={20} />
+          <span className="field-marker flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] text-[#245943] shadow-[inset_0_0_0_1px_rgba(36,89,67,0.08)]">
+            <Tractor aria-hidden="true" size={21} />
           </span>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2.5">
+        <div className="mt-5 grid grid-cols-[1.2fr_0.8fr] gap-2.5">
           <Link
-            className="flex min-h-[68px] items-center justify-between gap-3 rounded-[22px] bg-[#245943] px-4 text-sm font-black text-white shadow-[0_12px_24px_rgba(36,89,67,0.18)]"
+            className="flex min-h-[76px] items-center justify-between gap-3 rounded-[24px] bg-[#245943] px-4 text-sm font-black text-white shadow-[0_16px_28px_rgba(36,89,67,0.22)] transition active:scale-[0.99]"
             to="/services"
           >
             <span>Оставить заявку</span>
-            <Plus aria-hidden="true" size={18} />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/14">
+              <Plus aria-hidden="true" size={18} />
+            </span>
           </Link>
           <Link
-            className="flex min-h-[68px] items-center justify-between gap-3 rounded-[22px] bg-white px-4 text-sm font-black text-[#245943]"
+            className="soft-paper flex min-h-[76px] flex-col justify-between rounded-[24px] border border-white/80 px-4 py-3 text-sm font-black text-[#245943] transition active:scale-[0.99]"
             to="/requests"
           >
             <span>{formatActiveRequestsCount(activeRequestsCount)}</span>
@@ -68,18 +70,15 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mb-4 grid gap-2.5 md:grid-cols-4">
+      <section className="mb-4 grid grid-cols-2 gap-2.5 md:grid-cols-4">
         {statusCounts.length > 0 ? (
           statusCounts.map((item) => (
             <Link
-              className="flex min-h-[62px] items-center justify-between gap-2 rounded-[22px] border border-[#E2DED5] bg-white px-3.5 shadow-[0_8px_20px_rgba(24,38,31,0.045)]"
+              className="soft-paper flex min-h-[82px] flex-col justify-between gap-2 rounded-[24px] border border-[#E2DED5] px-3.5 py-3 shadow-[0_10px_24px_rgba(24,38,31,0.055)] transition active:scale-[0.99]"
               key={item.status}
               to="/requests"
             >
-              <div className="min-w-0">
-                <p className="text-[20px] font-black leading-none text-[#18261F]">{item.count}</p>
-                <p className="mt-1 truncate text-xs font-bold text-[#69756E]">заявки</p>
-              </div>
+              <p className="text-[24px] font-black leading-none text-[#18261F]">{item.count}</p>
               <StatusBadge status={item.status} />
             </Link>
           ))
@@ -120,14 +119,14 @@ export function HomePage() {
         )}
       </section>
 
-      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_10px_26px_rgba(24,38,31,0.05)]">
+      <section className="agro-card rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_14px_30px_rgba(24,38,31,0.06)]">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-black text-[#18261F]">Мой профиль</h2>
             <p className="mt-1 text-sm font-semibold text-[#69756E]">{user?.activity}</p>
           </div>
           <Link
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F6F3EC] text-[#245943]"
+            className="field-marker flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] text-[#245943]"
             to="/profile"
             aria-label="Открыть профиль"
           >

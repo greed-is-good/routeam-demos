@@ -12,13 +12,12 @@ export function Header() {
   };
 
   return (
-    <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 pb-3 pt-5 md:px-8">
-      <Link
-        to={isAuthenticated ? '/home' : '/services'}
-        className="text-lg font-black tracking-[0] text-[#18261F]"
-        aria-label="Агросоюз"
-      >
-        Агросоюз
+    <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 pb-4 pt-5 md:px-8">
+      <Link to={isAuthenticated ? '/home' : '/services'} className="inline-flex items-center gap-2" aria-label="Агросоюз">
+        <span className="field-marker flex h-9 w-9 items-center justify-center rounded-[14px] text-sm font-black text-[#245943]">
+          А
+        </span>
+        <span className="text-lg font-black tracking-[0] text-[#18261F]">Агросоюз</span>
       </Link>
 
       {isAuthenticated ? (
