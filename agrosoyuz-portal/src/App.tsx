@@ -10,6 +10,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { RequestDetailsPage } from './pages/RequestDetailsPage';
 import { RequestSuccessPage } from './pages/RequestSuccessPage';
 import { RequestsPage } from './pages/RequestsPage';
+import { ServicesPage } from './pages/ServicesPage';
 
 export function App() {
   return (
@@ -17,7 +18,7 @@ export function App() {
       <Route element={<PublicHomePage />} path="/" />
       <Route element={<OnboardingPage />} path="/onboarding" />
       <Route element={<Navigate replace to="/" />} path="/home" />
-      <Route element={<Navigate replace to="/" />} path="/services" />
+      <Route element={<ServicesPage />} path="/services" />
       <Route element={<CategoryPage />} path="/categories/:categorySlug" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />

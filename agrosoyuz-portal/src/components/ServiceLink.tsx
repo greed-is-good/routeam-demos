@@ -23,7 +23,12 @@ export function ServiceLink({ service }: { service: ServiceConfig }) {
       onClick={handleOpenService}
       type="button"
     >
-      <span className="min-w-0 flex-1 leading-snug">{service.serviceName}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block leading-snug">{service.serviceName}</span>
+        <span className="mt-0.5 block truncate text-[13px] font-normal leading-relaxed text-agro-secondary">
+          {service.shortDescription}
+        </span>
+      </span>
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-agro-green transition group-hover:bg-agro-greenSoft">
         <ChevronRight aria-hidden="true" size={16} />
       </span>
