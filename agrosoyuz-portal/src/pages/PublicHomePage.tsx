@@ -1,4 +1,4 @@
-import { ClipboardList, MapPin, Phone, Radio, Rows3 } from 'lucide-react';
+import { ClipboardList, MapPin, Phone, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../components/AppLayout';
 import { CategoryCard } from '../components/CategoryCard';
@@ -90,12 +90,11 @@ export function PublicHomePage() {
             <h2 className="text-[26px] font-semibold leading-tight text-agro-text" id="home-contacts">
               Контакты
             </h2>
-            <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
               {[
-                { icon: Phone, label: 'Телефон', value: 'Телефон будет указан заказчиком' },
-                { icon: MapPin, label: 'Адрес', value: 'Адрес будет указан заказчиком' },
-                { icon: ClipboardList, label: 'Режим работы', value: 'Режим работы будет указан заказчиком' },
-                { icon: Radio, label: 'Канал связи', value: 'Общий канал связи будет указан заказчиком' },
+                { icon: Phone, label: 'Телефон', value: '+7 999 123-45-67' },
+                { icon: MapPin, label: 'Адрес', value: 'Москва, ул. Полевая, 12' },
+                { icon: ClipboardList, label: 'Режим работы', value: 'Пн–Пт, 9:00–18:00' },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
