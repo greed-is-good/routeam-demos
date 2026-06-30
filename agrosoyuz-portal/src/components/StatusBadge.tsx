@@ -7,10 +7,17 @@ const statusClassNames: Record<RequestStatus, string> = {
   'Закрыта без исполнения': 'bg-agro-dangerSoft text-agro-danger border-[#D8C7C2]',
 };
 
-export function StatusBadge({ status }: { status: RequestStatus }) {
+const compactStatusLabel: Record<RequestStatus, string> = {
+  Получена: 'Получена',
+  'В обработке': 'В обработке',
+  Исполнена: 'Исполнена',
+  'Закрыта без исполнения': 'Закрыта',
+};
+
+export function StatusBadge({ status, compact = false }: { status: RequestStatus; compact?: boolean }) {
   return (
-    <span className={`inline-flex shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-none ${statusClassNames[status]}`}>
-      {status}
+    <span className={`inline-flex max-w-full shrink-0 whitespace-nowrap rounded-full border px-2 py-1 text-[11px] font-semibold leading-none sm:px-2.5 ${statusClassNames[status]}`}>
+      {compact ? compactStatusLabel[status] : status}
     </span>
   );
 }

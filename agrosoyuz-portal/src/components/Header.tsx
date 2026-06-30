@@ -12,7 +12,7 @@ export function Header() {
   };
 
   return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 pb-4 pt-5 md:px-8">
+    <header className="mx-auto flex w-full min-w-0 max-w-6xl items-center justify-between gap-3 px-4 pb-4 pt-5 sm:px-5 md:px-8">
       <Link to="/" className="inline-flex items-center gap-2" aria-label="Агросоюз">
         <span className="field-marker flex h-9 w-9 items-center justify-center rounded-[14px] text-sm font-bold text-agro-green">
           А
@@ -22,7 +22,7 @@ export function Header() {
 
       {isAuthenticated ? (
         <button
-          className="inline-flex min-h-11 items-center gap-2 rounded-full border border-agro-border bg-agro-surface px-4 text-sm font-semibold text-agro-green"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-agro-border bg-agro-surface px-3 text-sm font-semibold text-agro-green sm:px-4"
           onClick={handleLogout}
           type="button"
           aria-label="Выйти"
@@ -34,7 +34,7 @@ export function Header() {
       ) : (
         <Link
           to="/login"
-          className="inline-flex min-h-11 items-center rounded-full border border-agro-border bg-agro-surface px-4 text-sm font-semibold text-agro-green"
+          className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-agro-border bg-agro-surface px-4 text-sm font-semibold text-agro-green"
         >
           Войти
         </Link>

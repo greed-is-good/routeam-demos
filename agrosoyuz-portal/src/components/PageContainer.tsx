@@ -15,5 +15,5 @@ export function PageContainer({
     form: 'max-w-2xl',
   }[size];
 
-  return <div className={`mx-auto w-full ${sizeClassName} px-5 md:px-8 ${className}`}>{children}</div>;
+  return <div className={`mx-auto w-full min-w-0 ${sizeClassName} px-4 sm:px-5 md:px-8 ${className}`}>{children}</div>;
 }

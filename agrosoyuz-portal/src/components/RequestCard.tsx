@@ -6,17 +6,17 @@ import { StatusBadge } from './StatusBadge';
 export function RequestCard({ request }: { request: FarmRequest }) {
   return (
     <Link
-      className="group block min-h-[108px] rounded-card border border-agro-border bg-agro-surface px-4 py-3.5 transition duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.995]"
+      className="group block min-h-[108px] min-w-0 rounded-card border border-agro-border bg-agro-surface px-4 py-3.5 transition duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.995]"
       to={`/requests/${request.id}`}
     >
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <p className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-[0.06em] text-agro-secondary">
-          {request.categoryName}
-        </p>
-        <StatusBadge status={request.status} />
-      </div>
+      <p className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.06em] text-agro-secondary">
+        {request.categoryName}
+      </p>
 
-      <h2 className="mt-2 line-clamp-1 text-[17px] font-semibold leading-tight text-agro-text">{request.serviceName}</h2>
+      <div className="mt-2 flex min-w-0 items-start justify-between gap-2">
+        <h2 className="min-w-0 flex-1 text-[17px] font-semibold leading-tight text-agro-text">{request.serviceName}</h2>
+        <StatusBadge status={request.status} compact />
+      </div>
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <p className="min-w-0 flex-1 truncate text-sm font-medium text-agro-secondary">

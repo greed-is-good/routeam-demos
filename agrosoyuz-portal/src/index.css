@@ -27,6 +27,13 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -39,6 +46,12 @@ body {
 #root {
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+.app-surface,
+.app-surface main {
+  min-width: 0;
+  max-width: 100vw;
 }
 
 .app-surface {

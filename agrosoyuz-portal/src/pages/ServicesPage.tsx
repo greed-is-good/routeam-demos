@@ -18,16 +18,16 @@ export function ServicesPage() {
           </p>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-2" aria-label="Каталог услуг">
+        <section className="grid min-w-0 gap-3 lg:grid-cols-2 lg:gap-4" aria-label="Каталог услуг">
           {serviceCategories.map((category) => (
-            <article className="rounded-card border border-agro-border bg-agro-surface p-4" key={category.categorySlug}>
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <div className="flex min-w-0 gap-3">
+            <article className="min-w-0 rounded-card border border-agro-border bg-agro-surface p-3.5 sm:p-4" key={category.categorySlug}>
+              <div className="mb-4 flex min-w-0 items-start justify-between gap-3 sm:gap-4">
+                <div className="flex min-w-0 flex-1 gap-3">
                   <span className="field-marker flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-agro-green">
                     <IconGlyph className="h-5 w-5" name={category.icon} />
                   </span>
                   <div className="min-w-0">
-                    <h2 className="text-[19px] font-semibold leading-tight text-agro-text">{category.categoryName}</h2>
+                    <h2 className="break-words text-[19px] font-semibold leading-tight text-agro-text">{category.categoryName}</h2>
                     <p className="mt-1 text-sm leading-relaxed text-agro-secondary">
                       {categoryDescriptions[category.categorySlug]}
                     </p>
