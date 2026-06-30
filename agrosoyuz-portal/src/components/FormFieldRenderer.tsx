@@ -8,15 +8,16 @@ interface FormFieldRendererProps {
 }
 
 const inputBaseClassName =
-  'min-h-[54px] w-full rounded-[20px] border bg-[#FBFAF6] px-4 py-3 text-[15px] font-semibold text-[#18261F] outline-none transition placeholder:text-[#8A918B] focus:border-[#245943] focus:bg-white focus:shadow-[0_0_0_4px_rgba(36,89,67,0.08)]';
+  'min-h-[52px] w-full rounded-control border bg-agro-bg px-4 py-3 text-[15px] text-agro-text outline-none transition duration-200 placeholder:text-[#8A918B] focus:border-agro-green focus:bg-white';
 
 export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRendererProps) {
-  const borderClassName = error ? 'border-[#B56A62]' : 'border-[#E2DED5]';
-  const requiredMark = field.required ? <span className="text-[#7D3F3F]"> *</span> : null;
+  const borderClassName = error ? 'border-agro-danger' : 'border-agro-border';
+  const requiredMark = field.required ? <span className="text-agro-danger"> *</span> : null;
+  const errorId = `${field.name}-error`;
 
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-bold text-[#3C4B43]">
+      <span className="text-sm font-semibold text-agro-text">
         {field.label}
         {requiredMark}
       </span>
@@ -24,6 +25,8 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
       {field.type === 'textarea' ? (
         <textarea
           className={`${inputBaseClassName} ${borderClassName} min-h-32 resize-none`}
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={Boolean(error)}
           onChange={(event) => onChange(field.name, event.target.value)}
           placeholder={field.placeholder}
           value={value}
@@ -33,6 +36,8 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
       {field.type === 'select' ? (
         <select
           className={`${inputBaseClassName} ${borderClassName}`}
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={Boolean(error)}
           onChange={(event) => onChange(field.name, event.target.value)}
           value={value}
         >
@@ -54,8 +59,8 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
                 className={[
                   'min-h-[48px] rounded-[18px] border px-4 py-2 text-left text-[15px] font-bold transition',
                   isSelected
-                    ? 'border-[#245943] bg-[#DCE7DA] text-[#245943] shadow-[0_8px_18px_rgba(36,89,67,0.1)]'
-                    : 'border-[#E2DED5] bg-[#FBFAF6] text-[#3C4B43]',
+                    ? 'border-agro-green bg-agro-greenSoft text-agro-green'
+                    : 'border-agro-border bg-agro-bg text-agro-text',
                 ].join(' ')}
                 key={option}
                 onClick={() => onChange(field.name, option)}
@@ -71,6 +76,8 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
       {field.type !== 'textarea' && field.type !== 'select' && field.type !== 'radio' ? (
         <input
           className={`${inputBaseClassName} ${borderClassName}`}
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={Boolean(error)}
           onChange={(event) => onChange(field.name, event.target.value)}
           placeholder={field.placeholder}
           type={field.type}
@@ -78,7 +85,11 @@ export function FormFieldRenderer({ field, value, error, onChange }: FormFieldRe
         />
       ) : null}
 
-      {error ? <span className="text-sm font-medium text-[#9A4D45]">{error}</span> : null}
+      {error ? (
+        <span className="text-sm font-medium text-agro-danger" id={errorId}>
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

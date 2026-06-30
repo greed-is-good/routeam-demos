@@ -4,8 +4,8 @@ export function MobilePageContainer({ children, variant = 'default' }: { childre
   return (
     <div
       className={[
-        'min-h-screen w-full overflow-hidden text-[#18261F]',
-        variant === 'dark' ? 'bg-[#163A2D]' : 'bg-[#F6F3EC]',
+        'min-h-screen w-full overflow-hidden text-agro-text',
+        variant === 'dark' ? 'bg-[#163A2D]' : 'bg-agro-bg',
       ].join(' ')}
     >
       {children}

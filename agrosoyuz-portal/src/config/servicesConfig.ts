@@ -296,6 +296,18 @@ export const serviceCategories: ServiceCategory[] = [
 
 export const servicesConfig: ServiceConfig[] = serviceCategories.flatMap((category) => category.services);
 
+export const categoryDescriptions: Record<string, string> = {
+  goods: 'Материалы для сезонных работ и подготовки посевов.',
+  'field-work': 'Работы на участке и техника для выполнения задач хозяйства.',
+  'storage-sales': 'Размещение продукции на хранение и помощь с реализацией.',
+  land: 'Обращения по аренде и субаренде земельных участков.',
+  support: 'Сопровождение хозяйства по учёту и товарному кредитованию.',
+};
+
+export function getCategoryBySlug(categorySlug: string | undefined): ServiceCategory | undefined {
+  return serviceCategories.find((category) => category.categorySlug === categorySlug);
+}
+
 export function getServiceBySlug(serviceSlug: string | undefined): ServiceConfig | undefined {
   return servicesConfig.find((service) => service.serviceSlug === serviceSlug);
 }

@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../components/AppLayout';
 import { ConfirmationBottomSheet } from '../components/ConfirmationBottomSheet';
 import { EmptyState } from '../components/EmptyState';
+import { PageContainer } from '../components/PageContainer';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { RequestDetails } from '../components/RequestDetails';
 import { deleteRequest, getRequestById } from '../services/mockRequestsService';
@@ -29,24 +30,26 @@ export function RequestDetailsPage() {
 
   return (
     <AppLayout>
-      <Link className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#245943]" to="/requests">
-        <ArrowLeft aria-hidden="true" size={18} />
-        Назад
-      </Link>
+      <PageContainer size="form">
+        <Link className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-agro-green" to="/requests">
+          <ArrowLeft aria-hidden="true" size={18} />
+          Назад
+        </Link>
 
-      {request ? (
-        <RequestDetails onDelete={() => setDeleteOpen(true)} request={request} />
-      ) : (
-        <EmptyState
-          description="Заявка не найдена в локальных данных прототипа."
-          title="Заявка не найдена"
-          action={
-            <Link to="/requests">
-              <PrimaryButton variant="secondary">Вернуться к списку</PrimaryButton>
-            </Link>
-          }
-        />
-      )}
+        {request ? (
+          <RequestDetails onDelete={() => setDeleteOpen(true)} request={request} />
+        ) : (
+          <EmptyState
+            description="Заявка не найдена в локальных данных прототипа."
+            title="Заявка не найдена"
+            action={
+              <Link to="/requests">
+                <PrimaryButton variant="secondary">Вернуться к списку</PrimaryButton>
+              </Link>
+            }
+          />
+        )}
+      </PageContainer>
 
       <ConfirmationBottomSheet
         isOpen={isDeleteOpen}

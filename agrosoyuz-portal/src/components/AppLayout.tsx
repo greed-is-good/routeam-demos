@@ -13,7 +13,7 @@ export function AppLayout({ children, withHeader = true }: { children: ReactNode
         {withHeader ? <Header /> : null}
         <main
           className={[
-            'relative z-10 mx-auto w-full max-w-5xl flex-1 px-5 md:px-8',
+            'relative z-10 w-full flex-1',
             isAuthenticated ? 'pb-32' : 'pb-8',
           ].join(' ')}
         >

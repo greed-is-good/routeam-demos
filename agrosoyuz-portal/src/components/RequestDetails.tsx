@@ -48,56 +48,55 @@ export function RequestDetails({ request, onDelete }: { request: FarmRequest; on
 
   return (
     <article className="grid gap-4">
-      <section className="relative overflow-hidden rounded-[30px] bg-[#245943] p-5 text-white shadow-[0_24px_54px_rgba(36,89,67,0.22)]">
-        <div className="absolute inset-0 bento-lines-light opacity-60" />
+      <section className="rounded-card border border-agro-border bg-agro-surface p-5 shadow-soft">
         <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="relative">
-            <p className="text-sm font-bold text-white/72">Номер заявки</p>
-            <h1 className="mt-1 text-[30px] font-black">{request.number}</h1>
+          <div>
+            <p className="text-sm font-semibold text-agro-secondary">Номер заявки</p>
+            <h1 className="mt-1 text-[30px] font-bold text-agro-text">{request.number}</h1>
           </div>
           <StatusBadge status={request.status} />
         </div>
-        <div className="relative grid gap-3 text-sm">
-          <div className="rounded-[20px] bg-white/14 p-3 backdrop-blur">
-            <p className="text-white/62">Услуга</p>
-            <p className="mt-1 text-base font-black">{request.serviceName}</p>
+        <div className="grid gap-3 text-sm">
+          <div className="rounded-control bg-agro-bg p-3">
+            <p className="text-agro-secondary">Услуга</p>
+            <p className="mt-1 text-base font-semibold text-agro-text">{request.serviceName}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-[20px] bg-white/14 p-3 backdrop-blur">
-              <p className="text-white/62">Категория</p>
-              <p className="mt-1 font-bold">{request.categoryName}</p>
+            <div className="rounded-control bg-agro-bg p-3">
+              <p className="text-agro-secondary">Категория</p>
+              <p className="mt-1 font-semibold text-agro-text">{request.categoryName}</p>
             </div>
-            <div className="rounded-[20px] bg-white/14 p-3 backdrop-blur">
-              <p className="text-white/62">Дата</p>
-              <p className="mt-1 font-bold">{request.createdAt}</p>
+            <div className="rounded-control bg-agro-bg p-3">
+              <p className="text-agro-secondary">Дата</p>
+              <p className="mt-1 font-semibold text-agro-text">{request.createdAt}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
-        <h2 className="text-lg font-black">Переданные данные</h2>
+      <section className="rounded-card border border-agro-border bg-agro-surface p-4">
+        <h2 className="text-lg font-bold text-agro-text">Переданные данные</h2>
         <dl className="mt-4 grid gap-3">
           {displayFields.map((field) => (
-            <div className="rounded-[20px] border border-[#E2DED5] bg-[#F6F3EC] px-4 py-3" key={field.name}>
-              <dt className="text-xs font-black uppercase tracking-[0.04em] text-[#69756E]">{field.label}</dt>
-              <dd className="mt-1 text-[15px] font-bold text-[#18261F]">{field.value}</dd>
+            <div className="rounded-control border border-agro-border bg-agro-bg px-4 py-3" key={field.name}>
+              <dt className="text-xs font-semibold uppercase tracking-[0.04em] text-agro-secondary">{field.label}</dt>
+              <dd className="mt-1 text-[15px] font-semibold text-agro-text">{field.value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
-      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
-        <h2 className="text-lg font-black">{statusInfo.title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-[#69756E]">{statusInfo.description}</p>
+      <section className="rounded-card border border-agro-border bg-agro-surface p-4">
+        <h2 className="text-lg font-bold text-agro-text">{statusInfo.title}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-agro-secondary">{statusInfo.description}</p>
       </section>
 
-      <section className="rounded-[28px] border border-[#E2DED5] bg-[#ECE4D5] p-4 shadow-[0_18px_38px_rgba(74,59,38,0.08)]">
-        <h2 className="text-lg font-black">Контакт для уточнений</h2>
-        <p className="mt-2 text-sm leading-relaxed text-[#536259]">
+      <section className="rounded-card border border-agro-border bg-agro-muted p-4">
+        <h2 className="text-lg font-bold text-agro-text">Контакт для уточнений</h2>
+        <p className="mt-2 text-sm leading-relaxed text-agro-secondary">
           Если потребуются дополнительные данные, менеджер свяжется с вами по телефону:
         </p>
-        <p className="mt-3 rounded-[20px] bg-white/62 px-4 py-3 text-lg font-black text-[#18261F]">{phone}</p>
+        <p className="mt-3 rounded-control bg-white px-4 py-3 text-lg font-bold text-agro-text">{phone}</p>
       </section>
 
       {canDelete ? (

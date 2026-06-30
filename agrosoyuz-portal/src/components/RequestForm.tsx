@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { createRequest } from '../services/mockRequestsService';
 import type { FieldConfig, ServiceConfig } from '../types/forms';
 import { FormFieldRenderer } from './FormFieldRenderer';
+import { InlineNotice } from './InlineNotice';
 import { PrimaryButton } from './PrimaryButton';
 
 const requestContextFieldNames = ['location', 'comment'];
@@ -84,10 +85,31 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
 
   return (
     <form className="grid gap-5" onSubmit={handleSubmit}>
-      <section className="rounded-[28px] border border-[#E2DED5] bg-white p-4 shadow-[0_18px_38px_rgba(24,38,31,0.07)]">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-black">Данные заявки</h2>
-          <span className="rounded-full bg-[#ECE4D5] px-3 py-1 text-xs font-black text-[#6A5635]">Mock</span>
+      <section className="rounded-card border border-agro-border bg-agro-surface p-4">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-agro-text">Данные заявителя</h2>
+          <p className="mt-1 text-sm leading-relaxed text-agro-secondary">Берутся из раздела «Мой профиль».</p>
+        </div>
+        <div className="grid gap-2 text-sm sm:grid-cols-3">
+          <div className="rounded-control bg-agro-bg px-3 py-2">
+            <p className="text-xs font-semibold text-agro-secondary">ФИО</p>
+            <p className="mt-1 font-semibold text-agro-text">{user?.fullName}</p>
+          </div>
+          <div className="rounded-control bg-agro-bg px-3 py-2">
+            <p className="text-xs font-semibold text-agro-secondary">Хозяйство</p>
+            <p className="mt-1 font-semibold text-agro-text">{user?.farmName}</p>
+          </div>
+          <div className="rounded-control bg-agro-bg px-3 py-2">
+            <p className="text-xs font-semibold text-agro-secondary">Телефон</p>
+            <p className="mt-1 font-semibold text-agro-text">{user?.phone}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-card border border-agro-border bg-agro-surface p-4">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-agro-text">Заполните данные заявки</h2>
+          <p className="mt-1 text-sm leading-relaxed text-agro-secondary">Поля со звёздочкой обязательны.</p>
         </div>
         <div className="grid gap-4">
           {fields.map((field) => (
@@ -102,9 +124,7 @@ export function RequestForm({ service }: { service: ServiceConfig }) {
         </div>
       </section>
 
-      <p className="rounded-[22px] border border-[#E2DED5] bg-[#ECE4D5] px-4 py-3 text-sm font-semibold leading-relaxed text-[#536259]">
-        Данные заявителя будут взяты из раздела «Мой профиль». Состав полей заявки предварительный.
-      </p>
+      <InlineNotice>Если потребуются уточнения, менеджер свяжется с вами по указанному телефону.</InlineNotice>
 
       <PrimaryButton fullWidth loading={isSubmitting} type="submit">
         Отправить заявку

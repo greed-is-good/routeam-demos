@@ -1,42 +1,24 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { HomePage } from './pages/HomePage';
+import { CategoryPage } from './pages/CategoryPage';
 import { LoginPage } from './pages/LoginPage';
 import { NewRequestPage } from './pages/NewRequestPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ProtectedRoute } from './pages/ProtectedRoute';
+import { PublicHomePage } from './pages/PublicHomePage';
 import { RegisterPage } from './pages/RegisterPage';
 import { RequestDetailsPage } from './pages/RequestDetailsPage';
 import { RequestSuccessPage } from './pages/RequestSuccessPage';
 import { RequestsPage } from './pages/RequestsPage';
-import { ServicesPage } from './pages/ServicesPage';
-import { hasSeenOnboarding } from './pages/OnboardingPage';
-import { useAuth } from './hooks/useAuth';
-
-function RootRedirect() {
-  const { isAuthenticated } = useAuth();
-
-  if (!hasSeenOnboarding()) {
-    return <Navigate replace to="/onboarding" />;
-  }
-
-  return <Navigate replace to={isAuthenticated ? '/home' : '/services'} />;
-}
 
 export function App() {
   return (
     <Routes>
-      <Route element={<RootRedirect />} path="/" />
+      <Route element={<PublicHomePage />} path="/" />
       <Route element={<OnboardingPage />} path="/onboarding" />
-      <Route
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        }
-        path="/home"
-      />
-      <Route element={<ServicesPage />} path="/services" />
+      <Route element={<Navigate replace to="/" />} path="/home" />
+      <Route element={<Navigate replace to="/" />} path="/services" />
+      <Route element={<CategoryPage />} path="/categories/:categorySlug" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />
       <Route
@@ -79,7 +61,7 @@ export function App() {
         }
         path="/requests/:requestId"
       />
-      <Route element={<Navigate replace to="/services" />} path="*" />
+      <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>
   );
 }

@@ -4,14 +4,14 @@ import type { ServiceCategory } from '../types/forms';
 
 export function ServiceCategoryCard({ category }: { category: ServiceCategory }) {
   return (
-    <section className="agro-card rounded-[24px] border border-[#E2DED5] bg-white p-3.5 shadow-[0_10px_24px_rgba(24,38,31,0.055)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(24,38,31,0.075)]">
+    <section className="rounded-card border border-agro-border bg-agro-surface p-3.5 transition hover:-translate-y-0.5 hover:shadow-soft">
       <div className="mb-3 flex items-center gap-3">
-        <span className="field-marker flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] text-[#245943]">
+        <span className="field-marker flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-agro-green">
           <IconGlyph className="h-5 w-5" name={category.icon} />
         </span>
         <div className="min-w-0">
-          <h2 className="text-[17px] font-black leading-tight text-[#18261F]">{category.categoryName}</h2>
-          <p className="mt-0.5 text-xs font-bold text-[#69756E]">{category.services.length} услуги</p>
+          <h2 className="text-[17px] font-semibold leading-tight text-agro-text">{category.categoryName}</h2>
+          <p className="mt-0.5 text-xs font-medium text-agro-secondary">{category.services.length} услуги</p>
         </div>
       </div>
 

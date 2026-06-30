@@ -19,12 +19,12 @@ export function ServiceLink({ service }: { service: ServiceConfig }) {
 
   return (
     <button
-      className="group flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[18px] bg-[#F9F7F1] px-3 py-2.5 text-left text-[15px] font-bold text-[#18261F] transition hover:bg-[#F1EBDD] hover:text-[#245943] active:scale-[0.995]"
+      className="group flex min-h-[48px] w-full items-center justify-between gap-3 rounded-control bg-agro-bg px-3 py-2.5 text-left text-[15px] font-semibold text-agro-text transition hover:bg-agro-muted hover:text-agro-green active:scale-[0.995]"
       onClick={handleOpenService}
       type="button"
     >
       <span className="min-w-0 flex-1 leading-snug">{service.serviceName}</span>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#245943] transition group-hover:bg-[#DCE7DA]">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-agro-green transition group-hover:bg-agro-greenSoft">
         <ChevronRight aria-hidden="true" size={16} />
       </span>
     </button>

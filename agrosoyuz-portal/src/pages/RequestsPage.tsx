@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/AppLayout';
 import { EmptyState } from '../components/EmptyState';
+import { PageContainer } from '../components/PageContainer';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { RequestCard } from '../components/RequestCard';
 import { useRequests } from '../hooks/useRequests';
@@ -47,41 +48,43 @@ export function RequestsPage() {
 
   return (
     <AppLayout>
-      {toast ? (
-        <div className="fixed left-1/2 top-4 z-40 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2 rounded-2xl bg-[#245943] px-4 py-3 text-center text-sm font-semibold text-white shadow-soft">
-          {toast}
-        </div>
-      ) : null}
+      <PageContainer size="content">
+        {toast ? (
+          <div className="fixed left-1/2 top-4 z-40 w-[calc(100%-32px)] max-w-[398px] -translate-x-1/2 rounded-2xl bg-agro-green px-4 py-3 text-center text-sm font-semibold text-white shadow-soft">
+            {toast}
+          </div>
+        ) : null}
 
-      <section className="mb-4">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-[28px] font-black leading-tight text-[#18261F]">Мои заявки</h1>
-          <span className="shrink-0 rounded-full bg-[#DCE7DA] px-3 py-1.5 text-xs font-black text-[#245943]">
-            {formatRequestsCount(requests.length)}
-          </span>
-        </div>
-        <p className="mt-1.5 text-[14px] font-semibold leading-relaxed text-[#69756E]">
-          Отслеживайте статус отправленных заявок
-        </p>
-      </section>
-
-      {requests.length > 0 ? (
-        <section className="grid gap-2.5 md:grid-cols-2">
-          {requests.map((request) => (
-            <RequestCard key={request.id} request={request} />
-          ))}
+        <section className="mb-5">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-[30px] font-bold leading-tight text-agro-text">Мои заявки</h1>
+            <span className="shrink-0 rounded-full bg-agro-greenSoft px-3 py-1.5 text-xs font-semibold text-agro-green">
+              {formatRequestsCount(requests.length)}
+            </span>
+          </div>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-agro-secondary">
+            Отслеживайте статус отправленных заявок
+          </p>
         </section>
-      ) : (
-        <EmptyState
-          description="После отправки первой заявки она появится в этом разделе."
-          title="Заявок пока нет"
-          action={
-            <Link to="/services">
-              <PrimaryButton>Выбрать услугу</PrimaryButton>
-            </Link>
-          }
-        />
-      )}
+
+        {requests.length > 0 ? (
+          <section className="grid gap-3 md:grid-cols-2">
+            {requests.map((request) => (
+              <RequestCard key={request.id} request={request} />
+            ))}
+          </section>
+        ) : (
+          <EmptyState
+            description="После отправки первой заявки она появится в этом разделе."
+            title="Заявок пока нет"
+            action={
+              <Link to="/">
+                <PrimaryButton>Выбрать услугу</PrimaryButton>
+              </Link>
+            }
+          />
+        )}
+      </PageContainer>
     </AppLayout>
   );
 }

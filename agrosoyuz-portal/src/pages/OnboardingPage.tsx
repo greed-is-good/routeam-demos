@@ -113,7 +113,7 @@ export function OnboardingPage() {
 
   const goToServices = () => {
     rememberOnboardingSeen();
-    navigate('/services', { replace: true });
+    navigate('/', { replace: true });
   };
 
   const goNext = () => {
