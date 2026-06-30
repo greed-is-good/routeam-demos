@@ -66,16 +66,7 @@ export function PublicHomePage() {
           </div>
         </section>
 
-        <section className="grid gap-4 py-8 md:grid-cols-[0.9fr_1.1fr] md:items-start">
-          <div className="rounded-card border border-agro-border bg-agro-surface p-5">
-            <h2 className="text-[26px] font-semibold leading-tight text-agro-text">Агросоюз</h2>
-            <div className="mt-4 grid gap-3 text-[15px] leading-relaxed text-agro-secondary">
-              <p>Единый сервис для обращения по товарам и услугам, связанным с работой хозяйства.</p>
-              <p>Пользователь выбирает направление, отправляет заявку и видит её статус в личном кабинете.</p>
-              <p>Состав данных в прототипе предварительный и будет уточняться с заказчиком.</p>
-            </div>
-          </div>
-
+        <section className="py-8">
           <div className="rounded-card border border-agro-border bg-agro-muted p-5">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-control bg-white text-agro-green">
               <Rows3 aria-hidden="true" size={20} />
