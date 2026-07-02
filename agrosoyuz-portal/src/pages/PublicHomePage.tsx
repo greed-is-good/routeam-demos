@@ -2,7 +2,6 @@ import { ClipboardList, MapPin, Phone, Rows3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '../components/AppLayout';
 import { CategoryCard } from '../components/CategoryCard';
-import { FieldPattern } from '../components/FieldPattern';
 import { PageContainer } from '../components/PageContainer';
 import { serviceCategories } from '../config/servicesConfig';
 import { useAuth } from '../hooks/useAuth';
@@ -15,8 +14,8 @@ export function PublicHomePage() {
   return (
     <AppLayout>
       <PageContainer className="pb-32 md:pb-10">
-        <section className="grid gap-6 py-4 md:grid-cols-[1.02fr_0.98fr] md:items-center md:py-10">
-          <div className="min-w-0">
+        <section className="py-4 md:py-10">
+          <div className="min-w-0 max-w-3xl">
             <p className="text-sm font-semibold text-agro-green">Цифровой сервис для сельского хозяйства</p>
             <h1 className="mt-3 max-w-3xl text-[34px] font-semibold leading-[1.07] text-agro-text md:text-[56px]">
               Нужные услуги для вашего хозяйства в одном месте
@@ -41,8 +40,6 @@ export function PublicHomePage() {
               ) : null}
             </div>
           </div>
-
-          <FieldPattern />
         </section>
 
         <section className="py-8" aria-labelledby="home-categories">
@@ -55,11 +52,11 @@ export function PublicHomePage() {
             </p>
           </div>
 
-          <div className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 lg:grid-cols-3">
+          <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {serviceCategories.map((category) => (
               <CategoryCard
                 category={category}
-                className={category.categorySlug === 'field-work' || category.categorySlug === 'support' ? 'min-[390px]:col-span-2 lg:col-span-1' : ''}
+                className={category.categorySlug === 'field-work' || category.categorySlug === 'support' ? 'md:col-span-2 lg:col-span-1' : ''}
                 key={category.categorySlug}
               />
             ))}

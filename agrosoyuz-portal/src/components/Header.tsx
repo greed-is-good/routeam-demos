@@ -18,23 +18,15 @@ export function Header() {
       </Link>
 
       {isAuthenticated ? (
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            className="inline-flex min-h-11 items-center rounded-full border border-agro-border bg-agro-surface px-4 text-sm font-semibold text-agro-green"
-            to="/requests"
-          >
-            Кабинет
-          </Link>
-          <button
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-agro-secondary hover:bg-agro-muted hover:text-agro-green"
-            onClick={handleLogout}
-            type="button"
-            aria-label="Выйти"
-            title="Выйти"
-          >
-            <LogOut aria-hidden="true" size={17} />
-          </button>
-        </div>
+        <button
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-agro-secondary hover:bg-agro-muted hover:text-agro-green"
+          onClick={handleLogout}
+          type="button"
+          aria-label="Выйти"
+          title="Выйти"
+        >
+          <LogOut aria-hidden="true" size={17} />
+        </button>
       ) : (
         <Link
           to="/login"

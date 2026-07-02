@@ -15,11 +15,11 @@ export function ServicesPage() {
           </p>
         </section>
 
-        <section className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 lg:grid-cols-3" aria-label="Категории услуг">
+        <section className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3" aria-label="Категории услуг">
           {serviceCategories.map((category) => (
             <CategoryCard
               category={category}
-              className={category.categorySlug === 'field-work' || category.categorySlug === 'support' ? 'min-[390px]:col-span-2 lg:col-span-1' : ''}
+              className={category.categorySlug === 'field-work' || category.categorySlug === 'support' ? 'md:col-span-2 lg:col-span-1' : ''}
               key={category.categorySlug}
             />
           ))}
